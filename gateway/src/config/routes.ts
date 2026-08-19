@@ -1,5 +1,5 @@
 export interface RouteConfig {
-  context: string;
+  context: string | RegExp;
   target: string;
   auth: "required" | "optional" | "mixed";
   roles?: string[];
@@ -15,6 +15,12 @@ export const routeTable: RouteConfig[] = [
     context: "/api/businesses",
     target: "http://business-service:4002",
     auth: "mixed",        // GET public, POST/PATCH require auth
+  },
+  {
+    context: /^\/api\/owner\/businesses\/[^/]+\/analytics/,
+    target: "http://analytics-service:4005",
+    auth: "required",
+    roles: ["OWNER", "ADMIN"],
   },
   {
     context: "/api/owner",
@@ -40,6 +46,6 @@ export const routeTable: RouteConfig[] = [
   {
     context: "/api/analytics",
     target: "http://analytics-service:4005",
-    auth: "required",
+    auth: "optional",
   },
 ];

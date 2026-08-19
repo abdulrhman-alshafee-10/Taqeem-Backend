@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20
 WORKDIR /app
 
 # Copy root configurations
@@ -13,6 +13,10 @@ COPY services/business-service ./services/business-service
 
 # Install dependencies
 RUN npm install
+
+# Build shared library
+WORKDIR /app/shared
+RUN npm run build
 
 # Build business service
 WORKDIR /app/services/business-service

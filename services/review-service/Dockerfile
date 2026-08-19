@@ -8,6 +8,10 @@ COPY services/review-service ./services/review-service
 
 RUN npm install
 
+# Build shared library
+WORKDIR /app/shared
+RUN npm run build
+
 WORKDIR /app/services/review-service
 RUN npm run build
 

@@ -107,12 +107,13 @@ services:
     container_name: taqeem_timescaledb
     restart: unless-stopped
     environment:
-      POSTGRES_USER: taqeem
-      POSTGRES_PASSWORD: taqeem_pw
-      POSTGRES_DB: taqeem_analytics
+      - POSTGRES_PASSWORD=taqeem_pw
+      - POSTGRES_USER=taqeem
+      - POSTGRES_DB=taqeem_analytics
     ports: ["5433:5432"]
     volumes:
       - timescale_data:/var/lib/postgresql/data
+      - ./infra/timescaledb/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks: [taqeem_network]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U taqeem"]
@@ -197,5 +198,23 @@ services:
     ports: ["4004:4004"]
     depends_on:
       - elasticsearch
+      - rabbitmq
+    networks: [taqeem_network]
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: services/analytics-service/Dockerfile
+    container_name: taqeem_analytics_service
+    restart: unless-stopped
+    environment:
+      PORT: 4005
+      TIMESCALE_URL: postgresql://taqeem:taqeem_pw@timescaledb:5432/taqeem_analytics
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://taqeem:taqeem_pw@rabbitmq:5672
+    ports: ["4005:4005"]
+    depends_on:
+      - timescaledb
+      - redis
       - rabbitmq
     networks: [taqeem_network]

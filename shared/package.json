@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    "./*": "./dist/*"
+  },
   "scripts": {
     "build": "tsc"
   },
@@ -12,6 +15,7 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/amqplib": "^0.10.5",
     "typescript": "^5.4.5"
   }
 }

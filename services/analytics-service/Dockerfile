@@ -1,26 +1,19 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy root configurations
 COPY package*.json ./
 COPY tsconfig.base.json ./
-
-# Copy shared library
 COPY shared ./shared
+COPY services/analytics-service ./services/analytics-service
 
-# Copy gateway service
-COPY gateway ./gateway
-
-# Install dependencies
 RUN npm install
 
 # Build shared library
 WORKDIR /app/shared
 RUN npm run build
 
-# Build gateway
-WORKDIR /app/gateway
+WORKDIR /app/services/analytics-service
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 4005
 CMD ["node", "dist/index.js"]

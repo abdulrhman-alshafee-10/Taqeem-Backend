@@ -33,6 +33,8 @@ for (const route of routeTable) {
     middlewares.push(authenticate({ required: false }));
   }
 
+  // Removed req.url mutation
+
   middlewares.push(
     createProxyMiddleware({
       target: route.target,
@@ -40,6 +42,7 @@ for (const route of routeTable) {
       xfwd: true,
       proxyTimeout: 15_000,
       timeout: 15_000,
+      pathRewrite: (path, req) => (req as any).originalUrl,
       on: {
         proxyReq: (proxyReq, req: any) => {
           // Strip incoming Authorization; downstream trusts injected headers only
@@ -50,7 +53,7 @@ for (const route of routeTable) {
           }
           proxyReq.setHeader("x-request-id", req.reqId);
         },
-        error: (err, req, res: any) => {
+        error: (err, req: any, res: any) => {
           logger.error({ err, path: req.path }, "proxy error");
           if (!res.headersSent) {
             res.status(502).json({ error: "Bad gateway" });
@@ -63,7 +66,7 @@ for (const route of routeTable) {
   app.use(route.context, ...middlewares);
 }
 
-app.use((req: Request, res: Response) => { res.status(404).json({ error: "Not found" }) });
+app.use((req: Request, res: Response) => { res.status(404).json({ error: "Gateway Route Not Found" }) });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => logger.info(`Gateway listening on :${PORT}`));
