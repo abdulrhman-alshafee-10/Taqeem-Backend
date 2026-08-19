@@ -16,7 +16,7 @@ app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN?.split(",") ?? "*" }));
 app.use(requestId);
-app.use(pinoHttp({ logger, genReqId: (req) => req.id }));
+app.use((pinoHttp as any)({ logger, genReqId: (req: any) => req.reqId }));
 app.use(globalLimiter);
 
 // Tighter limits on auth endpoints
@@ -48,7 +48,7 @@ for (const route of routeTable) {
             proxyReq.setHeader("x-user-id", req.user.sub as string);
             proxyReq.setHeader("x-user-role", req.user.role as string);
           }
-          proxyReq.setHeader("x-request-id", req.id);
+          proxyReq.setHeader("x-request-id", req.reqId);
         },
         error: (err, req, res: any) => {
           logger.error({ err, path: req.path }, "proxy error");

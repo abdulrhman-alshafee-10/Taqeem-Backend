@@ -55,7 +55,7 @@ export function authenticate(opts: AuthOptions = {}) {
       }
       next();
     } catch (err: any) {
-      logger.warn({ err: err.message, reqId: req.id }, "jwt verify failed");
+      logger.warn({ err: err.message, reqId: (req as any).reqId }, "jwt verify failed");
       if (required) return res.status(401).json({ error: "Invalid token" });
       next();
     }

@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ClaimStatus {
+  UNCLAIMED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PriceTier {
+  ONE     // $
+  TWO     // $$
+  THREE   // $$$
+  FOUR    // $$$$
+}
+
+model Business {
+  id            String       @id @default(uuid()) @db.Uuid
+  ownerId       String?      @map("owner_id") @db.Uuid   // soft FK to User.id
+  name          String
+  slug          String       @unique
+  description   String?
+  categories    String[]     @default([])
+  priceTier     PriceTier?   @map("price_tier")
+  phone         String?
+  website       String?
+  email         String?
+  photos        String[]     @default([])
+
+  // Location
+  addressLine1  String       @map("address_line_1")
+  addressLine2  String?      @map("address_line_2")
+  city          String
+  region        String
+  country       String
+  postalCode    String       @map("postal_code")
+  latitude      Float
+  longitude     Float
+
+  // Denormalized aggregates (updated by event consumer)
+  avgRating     Float        @default(0)  @map("avg_rating")
+  reviewCount   Int          @default(0)  @map("review_count")
+
+  // Claim
+  claimStatus   ClaimStatus  @default(UNCLAIMED) @map("claim_status")
+
+  hours         BusinessHours[]
+  claims        BusinessClaim[]
+
+  isActive      Boolean      @default(true) @map("is_active")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt      @map("updated_at")
+
+  @@index([ownerId])
+  @@index([city, region, country])
+  @@index([categories], type: Gin)
+  @@map("businesses")
+}
+
+model BusinessHours {
+  id          String   @id @default(uuid()) @db.Uuid
+  businessId  String   @map("business_id") @db.Uuid
+  // 0 = Sunday ... 6 = Saturday
+  dayOfWeek   Int      @map("day_of_week")
+  openTime    String   @map("open_time")   // "09:00"
+  closeTime   String   @map("close_time")  // "22:00"
+  isClosed    Boolean  @default(false) @map("is_closed")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, dayOfWeek])
+  @@map("business_hours")
+}
+
+model BusinessClaim {
+  id            String       @id @default(uuid()) @db.Uuid
+  businessId    String       @map("business_id") @db.Uuid
+  claimantId    String       @map("claimant_id") @db.Uuid  // soft FK to User.id
+  proofUrl      String?      @map("proof_url")
+  status        ClaimStatus  @default(PENDING)
+  reviewerNote  String?      @map("reviewer_note")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  resolvedAt    DateTime?    @map("resolved_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([claimantId])
+  @@index([status])
+  @@map("business_claims")
+}

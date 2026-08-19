@@ -21,7 +21,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports: ["5432:5432"]
+    ports: ["5434:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -54,7 +54,7 @@ services:
     container_name: taqeem_redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
-    ports: ["6379:6379"]
+    ports: ["6380:6379"]
     volumes:
       - redis_data:/data
     networks: [taqeem_network]
@@ -121,16 +121,51 @@ services:
       retries: 5
 
   gateway:
-    build: ./gateway
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
     container_name: taqeem_gateway
     restart: unless-stopped
     environment:
       PORT: 3000
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
-    ports: ["3000:3000"]
+    ports: ["4000:3000"]
     depends_on:
       - postgres
       - mongo
       - redis
+      - rabbitmq
+    networks: [taqeem_network]
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    container_name: taqeem_user_service
+    restart: unless-stopped
+    environment:
+      PORT: 4001
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_users?schema=public
+      JWT_PRIVATE_KEY_PATH: /keys/jwt.key
+    ports: ["4001:4001"]
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - ./jwt.key:/keys/jwt.key:ro
+    networks: [taqeem_network]
+
+  business-service:
+    build:
+      context: .
+      dockerfile: services/business-service/Dockerfile
+    container_name: taqeem_business_service
+    restart: unless-stopped
+    environment:
+      PORT: 4002
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_businesses?schema=public
+    ports: ["4002:4002"]
+    depends_on:
+      - postgres
       - rabbitmq
     networks: [taqeem_network]

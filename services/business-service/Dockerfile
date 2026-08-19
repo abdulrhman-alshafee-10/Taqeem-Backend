@@ -8,15 +8,16 @@ COPY tsconfig.base.json ./
 # Copy shared library
 COPY shared ./shared
 
-# Copy gateway service
-COPY gateway ./gateway
+# Copy business service
+COPY services/business-service ./services/business-service
 
-# Install dependencies (workspaces)
+# Install dependencies
 RUN npm install
 
-# Build gateway
-WORKDIR /app/gateway
+# Build business service
+WORKDIR /app/services/business-service
+RUN npx prisma generate
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 4002
 CMD ["node", "dist/index.js"]
