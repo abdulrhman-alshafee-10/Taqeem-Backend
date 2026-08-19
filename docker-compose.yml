@@ -169,3 +169,33 @@ services:
       - postgres
       - rabbitmq
     networks: [taqeem_network]
+
+  review-service:
+    build:
+      context: .
+      dockerfile: services/review-service/Dockerfile
+    container_name: taqeem_review_service
+    restart: unless-stopped
+    environment:
+      PORT: 4003
+      MONGO_URI: mongodb://taqeem:taqeem_pw@mongo:27017/taqeem_reviews?authSource=admin
+    ports: ["4003:4003"]
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks: [taqeem_network]
+
+  search-service:
+    build:
+      context: .
+      dockerfile: services/search-service/Dockerfile
+    container_name: taqeem_search_service
+    restart: unless-stopped
+    environment:
+      PORT: 4004
+      ES_NODE: http://elasticsearch:9200
+    ports: ["4004:4004"]
+    depends_on:
+      - elasticsearch
+      - rabbitmq
+    networks: [taqeem_network]

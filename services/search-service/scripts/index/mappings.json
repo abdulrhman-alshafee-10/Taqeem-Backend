@@ -1,0 +1,55 @@
+{
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "id":            { "type": "keyword" },
+      "ownerId":       { "type": "keyword" },
+      "name": {
+        "type": "text",
+        "analyzer": "taqeem_text",
+        "fields": {
+          "raw":      { "type": "keyword" },
+          "autocomplete": {
+            "type": "text",
+            "analyzer": "taqeem_autocomplete",
+            "search_analyzer": "taqeem_search_autocomplete"
+          }
+        }
+      },
+      "slug":          { "type": "keyword" },
+      "description":   { "type": "text", "analyzer": "taqeem_text" },
+
+      "categories":    { "type": "keyword" },
+      "priceTier":     { "type": "keyword" },
+
+      "phone":         { "type": "keyword", "index": false },
+      "website":       { "type": "keyword", "index": false },
+
+      "addressLine1":  { "type": "text", "analyzer": "taqeem_text" },
+      "city":          { "type": "keyword" },
+      "region":        { "type": "keyword" },
+      "country":       { "type": "keyword" },
+      "postalCode":    { "type": "keyword" },
+      "location":      { "type": "geo_point" },
+
+      "avgRating":     { "type": "float" },
+      "reviewCount":   { "type": "integer" },
+      "recentReviews": {
+        "type": "nested",
+        "properties": {
+          "reviewId":   { "type": "keyword" },
+          "authorId":   { "type": "keyword" },
+          "rating":     { "type": "integer" },
+          "body":       { "type": "text", "analyzer": "taqeem_text" },
+          "createdAt":  { "type": "date" }
+        }
+      },
+
+      "claimStatus":   { "type": "keyword" },
+      "isActive":      { "type": "boolean" },
+
+      "createdAt":     { "type": "date" },
+      "updatedAt":     { "type": "date" }
+    }
+  }
+}

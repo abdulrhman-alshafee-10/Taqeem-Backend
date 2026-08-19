@@ -1,0 +1,22 @@
+{
+  "name": "@taqeem/search-service",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "create-index": "tsx scripts/create-index.ts"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "@elastic/elasticsearch": "^8.13.0",
+    "zod": "^3.23.4",
+    "@taqeem/shared": "*"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "typescript": "^5.4.5"
+  }
+}
