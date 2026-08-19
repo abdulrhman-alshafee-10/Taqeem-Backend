@@ -1,0 +1,27 @@
+{
+  "name": "taqeem-backend",
+  "private": true,
+  "workspaces": [
+    "gateway",
+    "services/*",
+    "shared",
+    "tools/*"
+  ],
+  "scripts": {
+    "lint": "eslint 'services/*/src/**/*.js' 'gateway/src/**/*.js' 'shared/**/*.js'",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:contract": "vitest run tests/contract",
+    "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
+    "test:load": "k6 run tests/load/smoke.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "tsx": "^4.7.1",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

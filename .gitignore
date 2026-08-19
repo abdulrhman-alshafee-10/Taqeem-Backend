@@ -1,0 +1,86 @@
+# ─────────────────────────────────────────────
+# Taqeem — .gitignore
+# ─────────────────────────────────────────────
+
+# Documentation (excluded from git as requested)
+docs/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+.yarn/
+.pnp.*
+
+# Build output
+dist/
+build/
+out/
+*.tsbuildinfo
+.next/
+.turbo/
+.cache/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!jwt.pub
+!jwt.key.example
+keys/*.key
+keys/*.pem
+
+# Prisma
+prisma/migrations/dev.db*
+prisma/*.db
+prisma/*.db-journal
+
+# Docker
+*.local.yml
+docker-compose.override.yml
+
+# Logs
+logs/
+*.log
+pids/
+*.pid
+*.seed
+
+# Coverage & test
+coverage/
+.nyc_output/
+*.lcov
+.jest-cache/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Editors / IDE
+.vscode/
+!.vscode/settings.json.example
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Kiro
+.kiro/cache/
+
+# Uploads / local artifacts
+uploads/
+tmp/
+temp/
+
+# LangChain / LangGraph traces
+.langgraph/
+.langsmith/
