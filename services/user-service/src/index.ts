@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import userRoutes from "./routes/user.routes.js";
 import { initPublisher } from "./events/publisher.js";
+import { startReputationConsumer } from "./workers/reputation.consumer.js";
 
 const app = express();
 app.use(express.json({ limit: "100kb" }));
@@ -14,6 +15,7 @@ app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
 });
 
 const PORT = process.env.PORT || 4001;
-initPublisher().then(() => {
+initPublisher().then(async () => {
+  await startReputationConsumer();
   app.listen(PORT, () => console.log(`user-service on :${PORT}`));
 });

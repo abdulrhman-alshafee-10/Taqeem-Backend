@@ -55,6 +55,7 @@
           "authorId":   { "type": "keyword" },
           "rating":     { "type": "integer" },
           "body":       { "type": "text", "analyzer": "taqeem_text" },
+          "mediaTags":  { "type": "keyword" },
           "createdAt":  { "type": "date" }
         }
       },

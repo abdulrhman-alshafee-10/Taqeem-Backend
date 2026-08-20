@@ -18,8 +18,17 @@ export async function getBusinessAggregates(req: Request, res: Response) {
   const recentReviews = await Review.find({ businessId, isDeleted: false })
     .sort({ createdAt: -1 })
     .limit(5)
-    .select("id authorId rating body createdAt")
+    .select("_id authorId rating body createdAt media")
     .lean();
+
+  const mappedReviews = recentReviews.map(r => ({
+    reviewId: r._id.toString(),
+    authorId: r.authorId,
+    rating: r.rating,
+    body: r.body,
+    createdAt: r.createdAt,
+    mediaTags: r.media?.flatMap((m: any) => m.tags || []) || []
+  }));
 
   if (result.length === 0) {
     return res.json({ avgRating: 0, reviewCount: 0, recentReviews: [] });
@@ -28,6 +37,6 @@ export async function getBusinessAggregates(req: Request, res: Response) {
   res.json({
     avgRating: result[0].avgRating,
     reviewCount: result[0].reviewCount,
-    recentReviews,
+    recentReviews: mappedReviews,
   });
 }

@@ -6,6 +6,7 @@ import mediaRoutes  from "./routes/media.routes.js";
 import ownerRoutes  from "./routes/owner.routes.js";
 import { getBusinessAggregates } from "./controllers/internal.controller.js";
 import { initPublisher } from "./events/publisher.js";
+import { startReviewConsumer } from "./events/consumer.js";
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
@@ -26,6 +27,7 @@ const PORT = process.env.PORT || 4003;
 async function start() {
   await connectMongo();
   await initPublisher();
+  await startReviewConsumer();
   app.listen(PORT, () => console.log(`review-service on :${PORT}`));
 }
 

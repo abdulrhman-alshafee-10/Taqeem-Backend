@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { upload, uploadMedia } from "../controllers/media.controller.js";
+import { presign, mediaCallback } from "../controllers/media.controller.js";
 import { requireAuth } from "@taqeem/shared/auth/context.js";
 
 const r = Router();
-r.post("/upload", requireAuth as any, upload.single("file"), uploadMedia);
+r.post("/presign", requireAuth as any, presign);
+r.post("/callback", requireAuth as any, mediaCallback);
 export default r;
