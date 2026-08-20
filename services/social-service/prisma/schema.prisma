@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CollectionType {
+  USER_LIST         // private or shared user list
+  EDITORIAL         // curated by staff, always public
+  LOCAL_GUIDE       // curated by a Local Guide, public
+  AUTO              // system-generated
+}
+
+enum CollectionVisibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+}
+
+model Collection {
+  id            String                @id @default(uuid()) @db.Uuid
+  ownerId       String                @map("owner_id") @db.Uuid
+  type          CollectionType        @default(USER_LIST)
+  visibility    CollectionVisibility  @default(PRIVATE)
+  title         String
+  slug          String                @unique
+  description   String?
+  coverImageUrl String?               @map("cover_image_url")
+  city          String?
+  categories    String[]              @default([])
+  tags          String[]              @default([])
+  isFeatured    Boolean               @default(false) @map("is_featured")
+
+  items         CollectionItem[]
+  followers     CollectionFollower[]
+  collaborators CollectionCollaborator[]
+
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt      @map("updated_at")
+
+  @@index([type, visibility, city])
+  @@index([ownerId])
+}
+
+model CollectionItem {
+  id           String   @id @default(uuid()) @db.Uuid
+  collectionId String   @map("collection_id") @db.Uuid
+  businessId   String   @map("business_id") @db.Uuid
+  note         String?
+  position     Int      @default(0)
+  addedById    String   @map("added_by_id") @db.Uuid
+  addedAt      DateTime @default(now()) @map("added_at")
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, businessId])
+  @@index([collectionId, position])
+}
+
+model CollectionCollaborator {
+  collectionId String @map("collection_id") @db.Uuid
+  userId       String @map("user_id") @db.Uuid
+  role         String @default("EDITOR")  // EDITOR | VIEWER
+  addedAt      DateTime @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, userId])
+}
+
+model CollectionFollower {
+  collectionId String   @map("collection_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  followedAt   DateTime @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, userId])
+}

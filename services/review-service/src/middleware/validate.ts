@@ -1,8 +1,15 @@
 import { z } from "zod";
 import { Request, Response, NextFunction } from "express";
 
-export const CreateReviewSchema = z.object({
-  rating: z.number().int().min(1).max(5),
+const BaseReviewSchema = z.object({
+  rating: z.number().int().min(1).max(5).optional(),
+  aspects: z.object({
+    food:        z.number().int().min(1).max(5).optional(),
+    service:     z.number().int().min(1).max(5).optional(),
+    ambience:    z.number().int().min(1).max(5).optional(),
+    value:       z.number().int().min(1).max(5).optional(),
+    cleanliness: z.number().int().min(1).max(5).optional(),
+  }).optional(),
   title:  z.string().max(140).optional(),
   body:   z.string().min(10).max(5000),
   tags:   z.array(z.string().max(30)).max(10).default([]),
@@ -15,7 +22,8 @@ export const CreateReviewSchema = z.object({
   })).max(10).default([]),
 });
 
-export const UpdateReviewSchema = CreateReviewSchema.partial();
+export const CreateReviewSchema = BaseReviewSchema.refine(v => v.rating || v.aspects, { message: "Provide rating or aspects" });
+export const UpdateReviewSchema = BaseReviewSchema.partial();
 
 export const ReplySchema = z.object({
   body: z.string().min(1).max(2000),

@@ -53,4 +53,9 @@ export const routeTable: RouteConfig[] = [
     target: "http://agent-service:4006",
     auth: "optional",
   },
+  {
+    context: "/api/lists",
+    target: "http://social-service:4007",
+    auth: "mixed",
+  },
 ];

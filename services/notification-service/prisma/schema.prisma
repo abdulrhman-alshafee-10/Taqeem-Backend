@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AlertKind { 
+  NEW_BUSINESS_IN_RADIUS 
+  PRICE_DROP 
+  SLOT_OPENED 
+  REVIEW_ADDED 
+  LIST_ITEM_ADDED 
+}
+enum AlertStatus { 
+  ACTIVE 
+  PAUSED 
+  EXPIRED 
+}
+
+model AlertRule {
+  id         String       @id @default(uuid()) @db.Uuid
+  userId     String       @map("user_id") @db.Uuid
+  kind       AlertKind
+  status     AlertStatus  @default(ACTIVE)
+  params     Json
+  quietHours Json?
+  expiresAt  DateTime?
+  geoHash5   String?      // Optional: for NEW_BUSINESS_IN_RADIUS geohash optimization
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([userId, status])
+  @@index([kind, status])
+}

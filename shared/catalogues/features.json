@@ -1,0 +1,32 @@
+{
+  "features": [
+    { "key": "outdoor_seating", "labelEn": "Outdoor seating", "labelAr": "جلسات خارجية", "icon": "🌿" },
+    { "key": "wifi",            "labelEn": "Free wifi",       "labelAr": "واي فاي",     "icon": "📶" },
+    { "key": "kid_friendly",    "labelEn": "Kid friendly",    "labelAr": "مناسب للأطفال","icon": "👶" },
+    { "key": "wheelchair",      "labelEn": "Wheelchair accessible", "labelAr": "متاح للكراسي", "icon": "♿" },
+    { "key": "hookah",          "labelEn": "Shisha",          "labelAr": "شيشة",        "icon": "💨" },
+    { "key": "prayer_room",     "labelEn": "Prayer room",     "labelAr": "مصلى",        "icon": "🕌" },
+    { "key": "parking",         "labelEn": "Parking",         "labelAr": "موقف",        "icon": "🅿️" },
+    { "key": "delivery",        "labelEn": "Delivery",        "labelAr": "توصيل",       "icon": "🛵" },
+    { "key": "takeaway",        "labelEn": "Takeaway",        "labelAr": "تيك أواي",   "icon": "🥡" },
+    { "key": "reservations",    "labelEn": "Reservations",    "labelAr": "حجوزات",      "icon": "📅" },
+    { "key": "cards",           "labelEn": "Cards accepted",  "labelAr": "بطاقات",      "icon": "💳" }
+  ],
+  "dietary": [
+    { "key": "halal", "labelEn": "Halal", "labelAr": "حلال" },
+    { "key": "vegan", "labelEn": "Vegan", "labelAr": "نباتي" },
+    { "key": "vegetarian", "labelEn": "Vegetarian", "labelAr": "نباتي" },
+    { "key": "gluten_free", "labelEn": "Gluten Free", "labelAr": "خالي من الجلوتين" }
+  ],
+  "atmosphere": [
+    { "key": "quiet", "labelEn": "Quiet", "labelAr": "هادئ" },
+    { "key": "casual", "labelEn": "Casual", "labelAr": "كاجوال" },
+    { "key": "romantic", "labelEn": "Romantic", "labelAr": "رومانسي" },
+    { "key": "lively", "labelEn": "Lively", "labelAr": "حيوي" }
+  ],
+  "paymentMethods": [
+    { "key": "cash", "labelEn": "Cash", "labelAr": "كاش" },
+    { "key": "visa", "labelEn": "Visa", "labelAr": "فيزا" },
+    { "key": "mastercard", "labelEn": "Mastercard", "labelAr": "ماستركارد" }
+  ]
+}

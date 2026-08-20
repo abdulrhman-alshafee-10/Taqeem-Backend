@@ -10,9 +10,17 @@ const QuerySchema = z.object({
   radiusKm:   z.coerce.number().min(0.1).max(50).default(10),
   categories: z.string().optional().transform(v => v?.split(",").filter(Boolean) ?? []),
   priceTier:  z.string().optional().transform(v => v?.split(",").filter(Boolean) ?? []),
+  features:   z.string().optional().transform(v => v?.split(",").filter(Boolean) ?? []),
+  dietary:    z.string().optional().transform(v => v?.split(",").filter(Boolean) ?? []),
+  atmosphere: z.string().optional().transform(v => v?.split(",").filter(Boolean) ?? []),
   minRating:  z.coerce.number().min(0).max(5).optional(),
+  minAspect_food: z.coerce.number().min(1).max(5).optional(),
+  minAspect_service: z.coerce.number().min(1).max(5).optional(),
+  minAspect_ambience: z.coerce.number().min(1).max(5).optional(),
+  minAspect_value: z.coerce.number().min(1).max(5).optional(),
+  minAspect_cleanliness: z.coerce.number().min(1).max(5).optional(),
   city:       z.string().optional(),
-  sort:       z.enum(["relevance","rating","distance"]).default("relevance"),
+  sort:       z.string().default("relevance"),
   page:       z.coerce.number().int().min(1).default(1),
   size:       z.coerce.number().int().min(1).max(50).default(20),
 });
@@ -38,9 +46,22 @@ export async function search(req: Request, res: Response) {
       page: params.page,
       size: params.size,
       items,
+      facets: parseFacets(result.aggregations),
     });
   } catch (err: any) {
     console.error("Elasticsearch error:", err);
     res.status(500).json({ error: "Search failed" });
   }
+}
+
+function parseFacets(aggs: any) {
+  if (!aggs) return {};
+  const facets: any = {};
+  for (const [key, value] of Object.entries(aggs)) {
+    facets[key] = (value as any).buckets.map((b: any) => ({
+      key: b.key,
+      count: b.doc_count,
+    }));
+  }
+  return facets;
 }

@@ -28,11 +28,20 @@ export async function create(req: Request, res: Response) {
   const { businessId } = req.params;
 
   try {
+    let rating = req.body.rating;
+    if (req.body.aspects) {
+      const vals = Object.values(req.body.aspects).filter(v => typeof v === "number") as number[];
+      if (vals.length > 0) {
+        rating = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) || rating;
+      }
+    }
+
     const doc = await Review.create({
       businessId,
       authorId:   ctx.id,
       authorName: req.header("x-user-name") || "Anonymous",
       ...req.body,
+      rating,
     });
 
     await publishEvent("review.created", {
@@ -41,6 +50,7 @@ export async function create(req: Request, res: Response) {
       businessId: doc.businessId,
       authorId:   doc.authorId,
       rating:     doc.rating,
+      aspects:    doc.aspects,
       createdAt:  doc.createdAt,
     });
     res.status(201).json(doc);
@@ -58,7 +68,15 @@ export async function update(req: Request, res: Response) {
   if (!doc) return res.status(404).json({ error: "Not found" });
   if (doc.authorId !== ctx.id && !ctx.isAdmin) return res.status(403).json({ error: "Forbidden" });
 
-  Object.assign(doc, req.body);
+  let rating = req.body.rating ?? doc.rating;
+  if (req.body.aspects) {
+    const vals = Object.values(req.body.aspects).filter(v => typeof v === "number") as number[];
+    if (vals.length > 0) {
+      rating = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) || rating;
+    }
+  }
+
+  Object.assign(doc, req.body, { rating });
   await doc.save();
 
   await publishEvent("review.updated", {
@@ -66,6 +84,7 @@ export async function update(req: Request, res: Response) {
     reviewId: doc._id.toString(),
     businessId: doc.businessId,
     rating: doc.rating,
+    aspects: doc.aspects,
     updatedAt: doc.updatedAt,
   });
   res.json(doc);

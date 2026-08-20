@@ -1,23 +1,19 @@
 import express, { Request, Response } from "express";
-import businessRoutes from "./routes/business.routes.js";
-import ownerRoutes from "./routes/owner.routes.js";
+import listRoutes from "./routes/list.routes.js";
 import { initPublisher } from "@taqeem/shared/events/publisher.js";
-import { initConsumer } from "./events/consumer.js";
 
 const app = express();
 app.use(express.json({ limit: "200kb" }));
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
 
-app.use("/api/businesses", businessRoutes);
-app.use("/api/owner",      ownerRoutes);
+app.use("/api/lists", listRoutes);
 
-const PORT = process.env.PORT || 4002;
+const PORT = process.env.PORT || 4006;
 
 async function start() {
   await initPublisher();
-  await initConsumer();
   app.listen(PORT, () => {
-    console.log(`business-service listening on port ${PORT}`);
+    console.log(`social-service listening on port ${PORT}`);
   });
 }
 

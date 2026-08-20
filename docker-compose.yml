@@ -220,7 +220,9 @@ services:
     networks: [taqeem_network]
 
   agent-service:
-    build: ./services/agent-service
+    build:
+      context: .
+      dockerfile: services/agent-service/Dockerfile
     container_name: taqeem_agent
     restart: unless-stopped
     environment:
@@ -240,4 +242,34 @@ services:
     depends_on:
       redis:      { condition: service_healthy }
       rabbitmq:   { condition: service_healthy }
+    networks: [taqeem_network]
+
+  social-service:
+    build:
+      context: .
+      dockerfile: services/social-service/Dockerfile
+    container_name: taqeem_social_service
+    restart: unless-stopped
+    environment:
+      PORT: 4007
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_social?schema=public
+    ports: ["4007:4007"]
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks: [taqeem_network]
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: taqeem_notification_service
+    restart: unless-stopped
+    environment:
+      PORT: 4008
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_notification?schema=public
+    ports: ["4008:4008"]
+    depends_on:
+      - postgres
+      - rabbitmq
     networks: [taqeem_network]

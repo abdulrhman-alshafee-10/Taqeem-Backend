@@ -16,6 +16,26 @@ export function buildSearchQuery(params: any) {
   if (city)              filter.push({ term:  { city } });
   if (typeof minRating === "number") filter.push({ range: { avgRating: { gte: minRating } } });
 
+  if (params.features?.length) {
+    filter.push({
+      terms_set: {
+        features: {
+          terms: params.features,
+          minimum_should_match_script: { source: `${params.features.length}` }
+        }
+      }
+    });
+  }
+  if (params.dietary?.length) filter.push({ terms: { dietary: params.dietary } });
+  if (params.atmosphere?.length) filter.push({ terms: { atmosphere: params.atmosphere } });
+
+  for (const key of ["food","service","ambience","value","cleanliness"]) {
+    const min = params[`minAspect_${key}`];
+    if (typeof min === "number") {
+      filter.push({ range: { [`aspects.${key}`]: { gte: min } } });
+    }
+  }
+
   if (typeof lat === "number" && typeof lng === "number") {
     filter.push({
       geo_distance: {
@@ -79,7 +99,15 @@ export function buildSearchQuery(params: any) {
     _source: [
       "id","name","slug","description","categories","priceTier",
       "city","region","country","location","avgRating","reviewCount","photos",
+      "aspects","features","dietary","atmosphere","paymentMethods"
     ],
+    aggs: {
+      features:   { terms: { field: "features",   size: 30 } },
+      dietary:    { terms: { field: "dietary",    size: 15 } },
+      atmosphere: { terms: { field: "atmosphere", size: 10 } },
+      priceTier:  { terms: { field: "priceTier",  size: 4  } },
+      city:       { terms: { field: "city",       size: 20 } }
+    }
   };
 
   if (typeof lat === "number" && typeof lng === "number") {
@@ -97,6 +125,9 @@ export function buildSearchQuery(params: any) {
     body.sort = [{ avgRating: "desc" }, "_score"];
   } else if (sort === "distance" && typeof lat === "number") {
     body.sort = [{ _geo_distance: { location: { lat, lon: lng }, order: "asc", unit: "km" } }];
+  } else if (sort?.startsWith("aspect.")) {
+    const key = sort.split(".")[1];
+    body.sort = [{ [`aspects.${key}`]: "desc" }, "_score"];
   } else {
     body.sort = ["_score"];
   }

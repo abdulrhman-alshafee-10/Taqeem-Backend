@@ -8,8 +8,8 @@ COPY tsconfig.base.json ./
 # Copy shared library
 COPY shared ./shared
 
-# Copy agent service
-COPY services/agent-service ./services/agent-service
+# Copy social service
+COPY services/social-service ./services/social-service
 
 # Install dependencies
 RUN npm install
@@ -18,9 +18,10 @@ RUN npm install
 WORKDIR /app/shared
 RUN npm run build
 
-# Build agent service
-WORKDIR /app/services/agent-service
+# Build social service
+WORKDIR /app/services/social-service
+RUN npx prisma generate
 RUN npm run build
 
-EXPOSE 4005
+EXPOSE 4006
 CMD ["node", "dist/index.js"]

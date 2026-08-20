@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import { startConsumers } from "./consumers/index.js";
 import { startDrain } from "./worker/drain.worker.js";
+import { setupTrending } from "./worker/trending.worker.js";
 import { redis } from "./redis.js";
 
 const app = express();
@@ -17,6 +18,7 @@ async function start() {
   await redis.connect();
   await startConsumers();
   startDrain();
+  setupTrending();
 
   app.listen(PORT, () => {
     console.log(`analytics-service listening on port ${PORT}`);

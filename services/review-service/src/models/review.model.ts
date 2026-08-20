@@ -11,6 +11,17 @@ const MediaSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const AspectsSchema = new mongoose.Schema(
+  {
+    food:        { type: Number, min: 1, max: 5 },
+    service:     { type: Number, min: 1, max: 5 },
+    ambience:    { type: Number, min: 1, max: 5 },
+    value:       { type: Number, min: 1, max: 5 },
+    cleanliness: { type: Number, min: 1, max: 5 },
+  },
+  { _id: false }
+);
+
 const ReplySchema = new mongoose.Schema(
   {
     ownerId:   { type: String, required: true },  // UUID from x-user-id
@@ -27,6 +38,7 @@ const ReviewSchema = new mongoose.Schema(
     authorId:   { type: String, required: true, index: true },  // UUID
     authorName: { type: String, required: true },               // denormalized snapshot
     rating:     { type: Number, required: true, min: 1, max: 5 },
+    aspects:    { type: AspectsSchema, default: null },
     title:      { type: String, maxlength: 140 },
     body:       { type: String, required: true, minlength: 10, maxlength: 5000 },
     media:      { type: [MediaSchema], default: [] },

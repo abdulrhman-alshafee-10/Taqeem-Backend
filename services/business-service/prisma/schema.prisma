@@ -33,6 +33,10 @@ model Business {
   website       String?
   email         String?
   photos        String[]     @default([])
+  features         String[] @default([])                @map("features")
+  dietary          String[] @default([])                @map("dietary")
+  atmosphere       String[] @default([])                @map("atmosphere")
+  paymentMethods   String[] @default([])                @map("payment_methods")
 
   // Location
   addressLine1  String       @map("address_line_1")
@@ -47,6 +51,16 @@ model Business {
   // Denormalized aggregates (updated by event consumer)
   avgRating     Float        @default(0)  @map("avg_rating")
   reviewCount   Int          @default(0)  @map("review_count")
+  aspectAvgFood        Float  @default(0) @map("aspect_avg_food")
+  aspectAvgService     Float  @default(0) @map("aspect_avg_service")
+  aspectAvgAmbience    Float  @default(0) @map("aspect_avg_ambience")
+  aspectAvgValue       Float  @default(0) @map("aspect_avg_value")
+  aspectAvgCleanliness Float  @default(0) @map("aspect_avg_cleanliness")
+  aspectCountFood      Int    @default(0) @map("aspect_count_food")
+  aspectCountService   Int    @default(0) @map("aspect_count_service")
+  aspectCountAmbience  Int    @default(0) @map("aspect_count_ambience")
+  aspectCountValue     Int    @default(0) @map("aspect_count_value")
+  aspectCountCleanliness Int  @default(0) @map("aspect_count_cleanliness")
 
   // Claim
   claimStatus   ClaimStatus  @default(UNCLAIMED) @map("claim_status")
@@ -61,6 +75,10 @@ model Business {
   @@index([ownerId])
   @@index([city, region, country])
   @@index([categories], type: Gin)
+  @@index([features],       type: Gin)
+  @@index([dietary],        type: Gin)
+  @@index([atmosphere],     type: Gin)
+  @@index([paymentMethods], type: Gin)
   @@map("businesses")
 }
 

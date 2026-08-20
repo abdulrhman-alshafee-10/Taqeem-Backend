@@ -22,6 +22,20 @@
       "categories":    { "type": "keyword" },
       "priceTier":     { "type": "keyword" },
 
+      "aspects": {
+        "properties": {
+          "food":        { "type": "float" },
+          "service":     { "type": "float" },
+          "ambience":    { "type": "float" },
+          "value":       { "type": "float" },
+          "cleanliness": { "type": "float" }
+        }
+      },
+      "features":       { "type": "keyword" },
+      "dietary":        { "type": "keyword" },
+      "atmosphere":     { "type": "keyword" },
+      "paymentMethods": { "type": "keyword" },
+
       "phone":         { "type": "keyword", "index": false },
       "website":       { "type": "keyword", "index": false },
 
