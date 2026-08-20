@@ -293,3 +293,45 @@ services:
       - postgres
       - rabbitmq
     networks: [taqeem_network]
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: taqeem_payment_service
+    restart: unless-stopped
+    environment:
+      PORT: 4009
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_payments?schema=public
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_PRICE_OWNER_PRO: ${STRIPE_PRICE_OWNER_PRO}
+      STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL}
+      STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL}
+      RABBITMQ_URL: amqp://taqeem:taqeem_pw@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+      USER_SERVICE_URL: http://user-service:4001
+    ports: ["4009:4009"]
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    networks: [taqeem_network]
+
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    container_name: taqeem_order_service
+    restart: unless-stopped
+    environment:
+      PORT: 4011
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_orders?schema=public
+      BUSINESS_SERVICE_URL: http://business-service:4002
+      PAYMENT_SERVICE_URL: http://payment-service:4009
+      RABBITMQ_URL: amqp://taqeem:taqeem_pw@rabbitmq:5672
+    ports: ["4011:4011"]
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks: [taqeem_network]

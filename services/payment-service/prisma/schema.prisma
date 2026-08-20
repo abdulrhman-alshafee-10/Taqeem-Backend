@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/client-payment"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PaymentStatus {
+  REQUIRES_ACTION
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentPurpose {
+  RESERVATION_DEPOSIT
+  ORDER
+  SUBSCRIPTION
+  GIFT_CARD_PURCHASE
+  OTHER
+}
+
+enum PaymentProvider {
+  STRIPE
+  FAWRY
+  INSTAPAY
+  VODAFONE_CASH
+  GIFT_CARD
+}
+
+model Payment {
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @map("user_id") @db.Uuid
+  businessId     String?         @map("business_id") @db.Uuid
+  purpose        PaymentPurpose
+  entity         String
+  entityId       String          @map("entity_id") @db.Uuid
+  amount         Decimal         @db.Decimal(12,2)
+  currency       String          @default("EGP")
+  provider       PaymentProvider
+  providerRef    String?         @unique @map("provider_ref")
+  status         PaymentStatus   @default(REQUIRES_ACTION)
+  idempotencyKey String?         @unique @map("idempotency_key")
+  metadata       Json            @default("{}")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  ledger  LedgerEntry[]
+  refunds Refund[]
+
+  @@index([userId, createdAt])
+  @@index([businessId, createdAt])
+  @@index([entity, entityId])
+  @@map("payments")
+}
+
+model Refund {
+  id           String   @id @default(uuid()) @db.Uuid
+  paymentId    String   @map("payment_id") @db.Uuid
+  amount       Decimal  @db.Decimal(12,2)
+  reason       String?
+  providerRef  String?  @unique @map("provider_ref")
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  payment Payment @relation(fields: [paymentId], references: [id])
+
+  @@map("refunds")
+}
+
+model LedgerEntry {
+  id        String   @id @default(uuid()) @db.Uuid
+  paymentId String?  @map("payment_id") @db.Uuid
+  account   String
+  side      String
+  amount    Decimal  @db.Decimal(12,2)
+  currency  String
+  memo      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  payment Payment? @relation(fields: [paymentId], references: [id])
+
+  @@index([account, createdAt])
+  @@index([paymentId])
+  @@map("ledger_entries")
+}
+
+model Subscription {
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @map("user_id") @db.Uuid
+  businessId         String?  @map("business_id") @db.Uuid
+  plan               String
+  status             String
+  stripeCustomerId   String?  @map("stripe_customer_id")
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+  currentPeriodEnd   DateTime? @map("current_period_end")
+  cancelAt           DateTime? @map("cancel_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([businessId])
+  @@map("subscriptions")
+}
+
+model IdempotencyRecord {
+  key       String   @id
+  status    Int
+  body      Json
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("idempotency_records")
+}
+
+enum GiftCardStatus {
+  ACTIVE
+  PARTIALLY_REDEEMED
+  REDEEMED
+  EXPIRED
+}
+
+model GiftCard {
+  id             String          @id @default(uuid()) @db.Uuid
+  code           String?         @unique
+  codeHash       String          @unique @map("code_hash")
+  buyerUserId    String?         @map("buyer_user_id") @db.Uuid
+  recipientEmail String?         @map("recipient_email")
+  message        String?
+  amountInitial  Decimal         @db.Decimal(12,2) @map("amount_initial")
+  amountRemaining Decimal        @db.Decimal(12,2) @map("amount_remaining")
+  currency       String          @default("EGP")
+  status         GiftCardStatus  @default(ACTIVE)
+  purchasePaymentId String?      @map("purchase_payment_id") @db.Uuid
+  businessScoped String?         @map("business_scoped") @db.Uuid
+  expiresAt      DateTime?       @map("expires_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  metadata       Json            @default("{}")
+
+  redemptions GiftCardRedemption[]
+
+  @@index([status, expiresAt])
+  @@map("gift_cards")
+}
+
+model GiftCardRedemption {
+  id          String   @id @default(uuid()) @db.Uuid
+  giftCardId  String   @map("gift_card_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  orderId     String?  @map("order_id") @db.Uuid
+  reservationId String? @map("reservation_id") @db.Uuid
+  amount      Decimal  @db.Decimal(12,2)
+  redeemedAt  DateTime @default(now()) @map("redeemed_at")
+
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+
+  @@index([giftCardId, redeemedAt])
+  @@index([userId])
+  @@map("gift_card_redemptions")
+}
