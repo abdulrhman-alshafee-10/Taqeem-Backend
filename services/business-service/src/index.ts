@@ -6,6 +6,7 @@ import menuRoutes from "./routes/menu.routes.js";
 import postRoutes from "./routes/post.routes.js";
 import qaRoutes from "./routes/qa.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
+import dealRoutes from "./routes/deal.routes.js";
 import { initPublisher } from "@taqeem/shared/events/publisher.js";
 import { initConsumer } from "./events/consumer.js";
 
@@ -20,6 +21,7 @@ app.use("/api", menuRoutes);
 app.use("/api", postRoutes);
 app.use("/api", qaRoutes);
 app.use("/api", aiRoutes);
+app.use("/api/businesses/:businessId/deals", dealRoutes);
 
 const PORT = process.env.PORT || 4002;
 

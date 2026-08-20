@@ -276,3 +276,20 @@ services:
       - postgres
       - rabbitmq
     networks: [taqeem_network]
+
+  reservation-service:
+    build:
+      context: .
+      dockerfile: services/reservation-service/Dockerfile
+    container_name: taqeem_reservation_service
+    restart: unless-stopped
+    environment:
+      PORT: 4007
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_reservations?schema=public
+      BUSINESS_SERVICE_URL: http://business-service:4002
+      RABBITMQ_URL: amqp://taqeem:taqeem_pw@rabbitmq:5672
+    ports: ["4007:4007"]
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks: [taqeem_network]

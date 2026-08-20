@@ -82,3 +82,16 @@ export async function claim(req: Request, res: Response) {
   });
   res.status(202).json(claim);
 }
+
+export async function toggleReservations(req: Request, res: Response) {
+  const businessId = req.params.id;
+  const { enabled } = req.body; // boolean
+
+  const updated = await prisma.business.update({
+    where: { id: businessId },
+    data: { isReservationsEnabled: enabled },
+  });
+
+  await publishEvent("business.updated", { id: crypto.randomUUID(), business: updated });
+  res.json({ isReservationsEnabled: updated.isReservationsEnabled });
+}

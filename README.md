@@ -17,6 +17,7 @@ graph TD
         Gateway --> SearchSvc[Search Service :4004]
         Gateway --> SocialSvc[Social Service :4010]
         Gateway --> AgentSvc[AI Agent Service :4006]
+        Gateway --> ResSvc[Reservation Service :4007]
     end
 
     subgraph Message Broker
@@ -24,6 +25,7 @@ graph TD
         BizSvc -.->|Publishes Events| RabbitMQ
         RevSvc -.->|Publishes Events| RabbitMQ
         SocialSvc -.->|Publishes Events| RabbitMQ
+        ResSvc -.->|Publishes Events| RabbitMQ
     end
 
     subgraph Consumers & Projections
@@ -32,12 +34,14 @@ graph TD
         RabbitMQ -.->|Consumes Events| NotificationSvc[Notification Service]
         RabbitMQ -.->|Consumes Events| RevSvc
         RabbitMQ -.->|Consumes Events| UserSvc
+        RabbitMQ -.->|Consumes Events| ResSvc
     end
 
     subgraph Data Layer
         UserSvc --> PG_User[(Postgres: Users)]
         BizSvc --> PG_Biz[(Postgres: Business)]
         SocialSvc --> PG_Social[(Postgres: Social)]
+        ResSvc --> PG_Res[(Postgres: Reservations)]
         RevSvc --> Mongo_Rev[(MongoDB: Reviews)]
         SearchSvc --> ES[(Elasticsearch)]
         AnalyticsSvc --> TS[(TimescaleDB)]
@@ -72,6 +76,10 @@ Instead of executing complex SQL `JOIN`s across multiple services to search for 
 ### 3. Choreography over Orchestration
 For cross-service workflows (like awarding user reputation when a review gets an upvote), we chose Event Choreography.
 * **The Trade-off:** There is no central orchestrator service telling other services what to do. Services simply emit events (`review.helpful_voted`) and independent consumers react (the User service increments reputation). This creates extreme decoupling and fault tolerance, though it requires centralized logging to trace end-to-end workflows.
+
+### 4. Optional Reservations (Phase 10)
+Reservations and Deals are fully supported via the new **Reservation Service**. Using PostgreSQL's row-level locking (`FOR UPDATE SKIP LOCKED`), we ensure zero double-bookings in high-concurrency situations.
+* **The Trade-off:** Reservations are strictly optional. The Reservation Service queries the Business Service synchronously (or via a cached projection) to verify if `isReservationsEnabled` is toggled on before processing any booking. This allows business owners to turn the widget off instantly without complex redeploys.
 
 ## 🚀 Getting Started
 

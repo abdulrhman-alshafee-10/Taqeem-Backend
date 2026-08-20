@@ -72,6 +72,7 @@ model Business {
   groupId       String?        @map("group_id") @db.Uuid
   group         BusinessGroup? @relation(fields: [groupId], references: [id])
 
+  isReservationsEnabled Boolean @default(false) @map("is_reservations_enabled")
   isActive      Boolean      @default(true) @map("is_active")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt      @map("updated_at")
@@ -269,5 +270,49 @@ model WeeklyInsight {
   createdAt  DateTime @default(now())
 
   @@unique([businessId, weekStart])
+}
+
+enum DealType {
+  PERCENT_OFF
+  FIXED_OFF
+  BOGO
+  FREE_ITEM
+}
+
+model Deal {
+  id            String     @id @default(uuid()) @db.Uuid
+  businessId    String     @map("business_id") @db.Uuid
+  type          DealType
+  title         String
+  description   String?
+  percentOff    Int?       @map("percent_off")
+  fixedOff      Decimal?   @db.Decimal(10,2) @map("fixed_off")
+  freeItemId    String?    @db.Uuid @map("free_item_id")
+  minSubtotal   Decimal?   @db.Decimal(10,2) @map("min_subtotal")
+  validDays     Int[]      @default([]) @map("valid_days")   // 0..6 (Sun..Sat)
+  validHoursFrom String?   @map("valid_hours_from")           // "17:00"
+  validHoursTo   String?   @map("valid_hours_to")             // "21:00"
+  validFrom     DateTime   @map("valid_from")
+  validTo       DateTime?  @map("valid_to")
+  usageLimit    Int?       @map("usage_limit")                 // total redemptions
+  perUserLimit  Int?       @default(1) @map("per_user_limit")
+  couponCode    String?    @unique @map("coupon_code")
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+
+  @@index([businessId, isActive])
+}
+
+model DealRedemption {
+  id         String   @id @default(uuid()) @db.Uuid
+  dealId     String   @map("deal_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  orderId    String?  @map("order_id") @db.Uuid
+  amount     Decimal  @db.Decimal(10,2)
+  redeemedAt DateTime @default(now())
+
+  @@unique([dealId, orderId])
+  @@index([dealId, redeemedAt])
+  @@index([userId, dealId])
 }
 

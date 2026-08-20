@@ -8,8 +8,11 @@ const r = Router();
 
 r.use(requireAuth as any, requireRole("OWNER", "ADMIN") as any);
 
+import { toggleReservations } from "../controllers/business.controller.js";
+
 r.get("/businesses",                              myBusinesses);
 r.put("/businesses/:businessId",                  requireBusinessOwner as any, validate(PatchBusinessSchema), updateMyBusiness);
+r.patch("/businesses/:id/reservations/toggle",    requireBusinessOwner as any, toggleReservations);
 
 // The following two routes are proxied at the Gateway to Review Service —
 // they are documented here only for surface completeness.
