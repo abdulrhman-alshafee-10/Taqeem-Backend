@@ -5,10 +5,13 @@ import { buildHelpIndex } from "./rag/loader.js";
 import path from "node:path";
 import { startMediaTagger } from "./workers/media-tagger.js";
 
+import internalRoutes from "./routes/internal.routes.js";
+
 const app = express();
 app.use(express.json({ limit: "200kb" }));
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api/agent", agentRoutes);
+app.use("/internal", internalRoutes);
 
 await initPublisher();
 await startMediaTagger();

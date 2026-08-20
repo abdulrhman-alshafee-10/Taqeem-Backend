@@ -67,12 +67,17 @@ model Business {
 
   hours         BusinessHours[]
   claims        BusinessClaim[]
+  members       BusinessMember[]
+
+  groupId       String?        @map("group_id") @db.Uuid
+  group         BusinessGroup? @relation(fields: [groupId], references: [id])
 
   isActive      Boolean      @default(true) @map("is_active")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt      @map("updated_at")
 
   @@index([ownerId])
+  @@index([groupId])
   @@index([city, region, country])
   @@index([categories], type: Gin)
   @@index([features],       type: Gin)
@@ -113,3 +118,156 @@ model BusinessClaim {
   @@index([status])
   @@map("business_claims")
 }
+
+model Menu {
+  id         String       @id @default(uuid()) @db.Uuid
+  businessId String       @map("business_id") @db.Uuid
+  name       String       // e.g. "Main menu", "Ramadan menu"
+  currency   String       @default("EGP")
+  isActive   Boolean      @default(true) @map("is_active")
+  validFrom  DateTime?    @map("valid_from")
+  validTo    DateTime?    @map("valid_to")
+  sections   MenuSection[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([businessId, isActive])
+}
+
+model MenuSection {
+  id       String      @id @default(uuid()) @db.Uuid
+  menuId   String      @map("menu_id") @db.Uuid
+  title    String
+  position Int         @default(0)
+  items    MenuItem[]
+
+  menu Menu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  @@index([menuId, position])
+}
+
+model MenuItem {
+  id            String        @id @default(uuid()) @db.Uuid
+  sectionId     String        @map("section_id") @db.Uuid
+  name          String
+  description   String?
+  basePrice     Decimal       @db.Decimal(10,2) @map("base_price")
+  photoUrl      String?       @map("photo_url")
+  isAvailable   Boolean       @default(true)
+  dietary       String[]      @default([])   // vegan, vegetarian, halal, gluten_free
+  spiciness     Int?          @db.SmallInt   // 0..3
+  caloriesKcal  Int?          @map("calories_kcal")
+  tags          String[]      @default([])   // popular, chef_special, new
+  position      Int           @default(0)
+  variants      MenuVariant[]
+
+  section MenuSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId, position])
+}
+
+model MenuVariant {
+  id      String   @id @default(uuid()) @db.Uuid
+  itemId  String   @map("item_id") @db.Uuid
+  label   String              // "Small", "Large", "With extra shot"
+  priceDelta Decimal @db.Decimal(10,2) @default(0)
+
+  item MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+enum OwnerPostType {
+  OFFER
+  ANNOUNCEMENT
+  EVENT
+  MENU_UPDATE
+}
+
+model OwnerPost {
+  id          String        @id @default(uuid()) @db.Uuid
+  businessId  String        @map("business_id") @db.Uuid
+  authorId    String        @map("author_id") @db.Uuid   // owner userId
+  type        OwnerPostType
+  title       String
+  body        String?
+  photoUrl    String?
+  validFrom   DateTime      @default(now()) @map("valid_from")
+  validTo     DateTime?     @map("valid_to")
+  couponCode  String?       @map("coupon_code")
+  ctaUrl      String?
+  isPublished Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([businessId, isPublished, validFrom])
+}
+
+model BusinessQuestion {
+  id           String  @id @default(uuid()) @db.Uuid
+  businessId   String  @map("business_id") @db.Uuid
+  askerId      String  @map("asker_id") @db.Uuid
+  body         String  @db.VarChar(500)
+  isHidden     Boolean @default(false)
+  helpfulCount Int     @default(0)
+  createdAt    DateTime @default(now())
+
+  answers      BusinessAnswer[]
+
+  @@index([businessId, createdAt])
+}
+
+model BusinessAnswer {
+  id          String  @id @default(uuid()) @db.Uuid
+  questionId  String  @map("question_id") @db.Uuid
+  authorId    String  @map("author_id") @db.Uuid
+  isOwner     Boolean @default(false)
+  body        String  @db.VarChar(1000)
+  helpfulCount Int    @default(0)
+  createdAt   DateTime @default(now())
+
+  question BusinessQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId, createdAt])
+}
+
+model BusinessGroup {
+  id         String     @id @default(uuid()) @db.Uuid
+  ownerId    String     @map("owner_id") @db.Uuid
+  name       String
+  slug       String     @unique
+  logoUrl    String?
+  websiteUrl String?
+  createdAt  DateTime   @default(now())
+  businesses Business[]
+
+  @@index([ownerId])
+}
+
+enum BusinessMemberRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+model BusinessMember {
+  businessId String              @map("business_id") @db.Uuid
+  userId     String              @map("user_id") @db.Uuid
+  role       BusinessMemberRole
+  invitedById String?            @map("invited_by_id") @db.Uuid
+  addedAt    DateTime            @default(now())
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@id([businessId, userId])
+  @@index([userId])
+}
+
+model WeeklyInsight {
+  id         String   @id @default(uuid()) @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  weekStart  DateTime @map("week_start")
+  data       Json
+  createdAt  DateTime @default(now())
+
+  @@unique([businessId, weekStart])
+}
+

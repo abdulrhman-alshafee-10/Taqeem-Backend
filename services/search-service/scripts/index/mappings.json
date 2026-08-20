@@ -60,6 +60,15 @@
         }
       },
 
+      "menuItems": {
+        "type": "nested",
+        "properties": {
+          "name":     { "type": "text", "analyzer": "taqeem_text" },
+          "dietary":  { "type": "keyword" },
+          "priceEgp": { "type": "float" }
+        }
+      },
+
       "claimStatus":   { "type": "keyword" },
       "isActive":      { "type": "boolean" },
 

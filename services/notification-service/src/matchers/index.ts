@@ -5,7 +5,20 @@ const prisma = new PrismaClient();
 
 const MATCHERS: Record<string, Function> = {
   "business.created": matchNewBusiness,
+  "member.invited": handleMemberInvited,
 };
+
+async function handleMemberInvited(payload: any) {
+  const { email, businessId, role, token } = payload;
+  const inviteUrl = `https://taqeem.app/invite/${token}`;
+  
+  // Real world: Use an email provider like SendGrid or SES.
+  // We simulate sending an email for Phase 9 testing.
+  console.log(`[EMAIL DISPATCH] To: ${email}`);
+  console.log(`[EMAIL DISPATCH] Subject: You've been invited to join a business on Taqeem!`);
+  console.log(`[EMAIL DISPATCH] Body: You have been invited to join business ${businessId} as a ${role}.`);
+  console.log(`[EMAIL DISPATCH] Link: ${inviteUrl}`);
+}
 
 export async function startAlertMatcher() {
   await startConsumer({
