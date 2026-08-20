@@ -80,3 +80,80 @@ model CollectionFollower {
 
   @@id([collectionId, userId])
 }
+
+enum FollowTarget {
+  USER
+  BUSINESS
+  LIST
+}
+
+model Follow {
+  id         String       @id @default(uuid()) @db.Uuid
+  followerId String       @map("follower_id") @db.Uuid
+  target     FollowTarget
+  targetId   String       @map("target_id") @db.Uuid
+  createdAt  DateTime     @default(now())
+
+  @@unique([followerId, target, targetId])
+  @@index([target, targetId])
+}
+
+model Recommendation {
+  id            String    @id @default(uuid()) @db.Uuid
+  fromUserId    String    @map("from_user_id") @db.Uuid
+  toUserId      String    @map("to_user_id") @db.Uuid
+  businessId    String    @map("business_id") @db.Uuid
+  note          String?   @db.VarChar(280)
+  createdAt     DateTime  @default(now())
+  seenAt        DateTime? @map("seen_at")
+
+  @@index([toUserId, createdAt])
+  @@index([fromUserId, businessId])
+  @@unique([fromUserId, toUserId, businessId])
+}
+
+model LocalGuide {
+  userId       String     @id @db.Uuid                 // soft FK to User.id
+  city         String
+  status       String     @default("APPLIED")           // APPLIED | APPROVED | REVOKED
+  applicationText String?
+  approvedById String?    @map("approved_by_id") @db.Uuid
+  approvedAt   DateTime?
+  perks        String[]   @default([])                  // ["priority_support","early_features", "editorial_publish", "verified_badge"]
+
+  @@index([city, status])
+}
+
+model Meetup {
+  id              String   @id @default(uuid()) @db.Uuid
+  organizerId     String   @map("organizer_id") @db.Uuid
+  businessId      String   @map("business_id") @db.Uuid   // hosted at
+  title           String
+  description     String?
+  startsAt        DateTime
+  endsAt          DateTime?
+  capacity        Int?
+  isPublic        Boolean  @default(true)
+  status          String   @default("SCHEDULED")           // SCHEDULED | CANCELLED | ENDED
+  createdAt       DateTime @default(now())
+  tags            String[] @default([])
+  coverImageUrl   String?
+  reservationId   String?  @map("reservation_id") @db.Uuid   // linked auto-reservation
+  requireApproval Boolean  @default(false)
+
+  rsvps           MeetupRsvp[]
+
+  @@index([startsAt])
+  @@index([businessId])
+}
+
+model MeetupRsvp {
+  meetupId  String @map("meetup_id") @db.Uuid
+  userId    String @map("user_id") @db.Uuid
+  status    String @default("GOING")   // GOING | MAYBE | DECLINED
+  createdAt DateTime @default(now())
+
+  meetup Meetup @relation(fields: [meetupId], references: [id], onDelete: Cascade)
+
+  @@id([meetupId, userId])
+}

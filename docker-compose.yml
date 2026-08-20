@@ -251,12 +251,15 @@ services:
     container_name: taqeem_social_service
     restart: unless-stopped
     environment:
-      PORT: 4007
+      PORT: 4010
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_social?schema=public
-    ports: ["4007:4007"]
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://taqeem:taqeem_pw@rabbitmq:5672
+    ports: ["4010:4010"]
     depends_on:
       - postgres
       - rabbitmq
+      - redis
     networks: [taqeem_network]
 
   notification-service:
