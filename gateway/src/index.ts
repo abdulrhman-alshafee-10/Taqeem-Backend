@@ -40,8 +40,8 @@ for (const route of routeTable) {
       target: route.target,
       changeOrigin: true,
       xfwd: true,
-      proxyTimeout: 15_000,
-      timeout: 15_000,
+      proxyTimeout: route.context === "/api/agent" ? 120_000 : 15_000,
+      timeout: route.context === "/api/agent" ? 120_000 : 15_000,
       pathRewrite: (path, req) => (req as any).originalUrl,
       on: {
         proxyReq: (proxyReq, req: any) => {

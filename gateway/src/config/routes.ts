@@ -48,4 +48,9 @@ export const routeTable: RouteConfig[] = [
     target: "http://analytics-service:4005",
     auth: "optional",
   },
+  {
+    context: "/api/agent",
+    target: "http://agent-service:4006",
+    auth: "optional",
+  },
 ];

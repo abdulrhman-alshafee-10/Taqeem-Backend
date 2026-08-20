@@ -218,3 +218,26 @@ services:
       - redis
       - rabbitmq
     networks: [taqeem_network]
+
+  agent-service:
+    build: ./services/agent-service
+    container_name: taqeem_agent
+    restart: unless-stopped
+    environment:
+      PORT: 4006
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LLM_FAST_MODEL: gpt-4o-mini
+      LLM_SMART_MODEL: gpt-4o
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://taqeem:taqeem_pw@rabbitmq:5672
+      SEARCH_SERVICE_URL:   http://search-service:4004
+      BUSINESS_SERVICE_URL: http://business-service:4002
+      REVIEW_SERVICE_URL:   http://review-service:4003
+      USER_SERVICE_URL:     http://user-service:4001
+      LANGCHAIN_TRACING_V2: "true"
+      LANGCHAIN_API_KEY:    ${LANGSMITH_API_KEY:-}
+      LANGCHAIN_PROJECT:    taqeem-agent
+    depends_on:
+      redis:      { condition: service_healthy }
+      rabbitmq:   { condition: service_healthy }
+    networks: [taqeem_network]

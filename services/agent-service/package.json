@@ -1,0 +1,31 @@
+{
+  "name": "@taqeem/agent-service",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "index:help": "tsx src/rag/loader.ts"
+  },
+  "dependencies": {
+    "@langchain/core": "latest",
+    "@langchain/langgraph": "latest",
+    "@langchain/langgraph-checkpoint-redis": "latest",
+    "@langchain/openai": "latest",
+    "@langchain/redis": "latest",
+    "@langchain/textsplitters": "latest",
+    "amqplib": "^0.10.4",
+    "axios": "^1.7.2",
+    "express": "^4.19.2",
+    "redis": "^4.7.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.10",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.4"
+  }
+}
