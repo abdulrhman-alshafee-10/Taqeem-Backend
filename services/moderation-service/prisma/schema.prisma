@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ContentKind {
+  REVIEW
+  REVIEW_MEDIA
+  QUESTION
+  ANSWER
+  TIP
+  JOURNAL
+  SHORT_VIDEO
+  CHECKIN
+  MEETUP
+  USER
+  BUSINESS
+}
+
+enum QueueStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  ESCALATED
+  AUTO_APPROVED
+  AUTO_REJECTED
+}
+
+enum DecisionAction {
+  APPROVE
+  REJECT
+  REMOVE_MEDIA
+  WARN_USER
+  MUTE_USER
+  BAN_USER
+  MERGE_BUSINESS
+  MARK_CLOSED
+  APPEAL_ACCEPT
+  APPEAL_REJECT
+}
+
+enum ReportReason {
+  SPAM
+  INAPPROPRIATE
+  FAKE
+  HATE_SPEECH
+  VIOLENCE
+  PII
+  PERSONAL_ATTACK
+  OFF_TOPIC
+  COPYRIGHT
+  OTHER
+}
+
+model Report {
+  id           String        @id @default(uuid()) @db.Uuid
+  reporterId   String        @map("reporter_id") @db.Uuid
+  contentKind  ContentKind
+  contentId    String        @map("content_id") @db.Uuid
+  reason       ReportReason
+  detail       String?
+  createdAt    DateTime      @default(now())
+
+  queueEntryId String?       @map("queue_entry_id") @db.Uuid
+  queueEntry   QueueEntry?   @relation(fields: [queueEntryId], references: [id])
+
+  @@index([contentKind, contentId])
+  @@index([reporterId])
+}
+
+model QueueEntry {
+  id            String       @id @default(uuid()) @db.Uuid
+  contentKind   ContentKind
+  contentId     String       @map("content_id") @db.Uuid
+  authorId      String?      @map("author_id") @db.Uuid
+  aiScore       Float?       @map("ai_score")
+  aiSignals     Json?        @map("ai_signals")
+  reportCount   Int          @default(0)
+  status        QueueStatus  @default(PENDING)
+  assignedModId String?      @map("assigned_mod_id") @db.Uuid
+  priority      Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  reports       Report[]
+  actions       ModAction[]
+
+  @@unique([contentKind, contentId])
+  @@index([status, priority, createdAt])
+  @@index([assignedModId, status])
+}
+
+model ModAction {
+  id           String          @id @default(uuid()) @db.Uuid
+  queueEntryId String          @map("queue_entry_id") @db.Uuid
+  moderatorId  String          @map("moderator_id") @db.Uuid
+  action       DecisionAction
+  note         String?
+  createdAt    DateTime        @default(now())
+
+  queueEntry   QueueEntry @relation(fields: [queueEntryId], references: [id])
+
+  @@index([moderatorId, createdAt])
+}
+
+model UserPenalty {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  action     String    // WARN | MUTE | BAN
+  reason     String?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, expiresAt])
+}
+
+model Appeal {
+  id           String    @id @default(uuid()) @db.Uuid
+  actionId     String    @map("action_id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  text         String
+  status       String    @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  reviewedById String?   @map("reviewed_by_id") @db.Uuid
+  reviewedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId, status])
+}
+
+model BusinessMergeRequest {
+  id                  String   @id @default(uuid()) @db.Uuid
+  primaryBusinessId   String   @map("primary_business_id") @db.Uuid
+  duplicateBusinessId String   @map("duplicate_business_id") @db.Uuid
+  reporterId          String   @map("reporter_id") @db.Uuid
+  status              String   @default("PENDING")
+  note                String?
+  createdAt           DateTime @default(now())
+
+  @@index([status])
+}
+
+model ReviewAppeal {
+  id            String    @id @default(uuid()) @db.Uuid
+  reviewId      String    @map("review_id") @db.Uuid
+  businessId    String    @map("business_id") @db.Uuid
+  ownerId       String    @map("owner_id") @db.Uuid
+  reason        String    // FAKE | PERSONAL_ATTACK | FALSE_CLAIM | OFF_TOPIC | OTHER
+  detail        String    @db.Text
+  evidenceUrls  String[]  @default([])
+  status        String    @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  decidedById   String?   @map("decided_by_id") @db.Uuid
+  decidedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@unique([reviewId, ownerId])
+  @@index([status, createdAt])
+}

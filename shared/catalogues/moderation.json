@@ -1,0 +1,15 @@
+{
+  "REASONS": [
+    { "key": "SPAM",            "labelEn": "Spam or promotional",   "labelAr": "إعلان" },
+    { "key": "INAPPROPRIATE",   "labelEn": "Inappropriate content", "labelAr": "غير مناسب" },
+    { "key": "FAKE",            "labelEn": "Fake / not real",       "labelAr": "غير حقيقي" },
+    { "key": "HATE_SPEECH",     "labelEn": "Hate speech",           "labelAr": "خطاب كراهية" },
+    { "key": "VIOLENCE",        "labelEn": "Violence",              "labelAr": "عنف" },
+    { "key": "PERSONAL_ATTACK", "labelEn": "Personal attack",       "labelAr": "هجوم شخصي" },
+    { "key": "PII",             "labelEn": "Reveals private info",  "labelAr": "معلومات شخصية" },
+    { "key": "COPYRIGHT",       "labelEn": "Copyright",             "labelAr": "حقوق نشر" },
+    { "key": "FALSE_CLAIM",     "labelEn": "False Claim",           "labelAr": "إدعاء كاذب" },
+    { "key": "PERMANENTLY_CLOSED", "labelEn": "Permanently Closed", "labelAr": "مغلق نهائيا" },
+    { "key": "OTHER",           "labelEn": "Other",                 "labelAr": "أخرى" }
+  ]
+}

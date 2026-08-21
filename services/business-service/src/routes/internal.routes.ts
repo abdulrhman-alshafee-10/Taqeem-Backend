@@ -43,4 +43,13 @@ router.post("/businesses/:businessId/summary", async (req: Request, res: Respons
   }
 });
 
+import { mergeBusinesses, unmergeBusinesses, closeBusiness } from '../controllers/internal.controller.js';
+import { getBusinessInternal } from '../controllers/business.controller.js';
+
+// Used by Moderation Service saga
+router.post('/businesses/merge', mergeBusinesses);
+router.post('/businesses/unmerge', unmergeBusinesses);
+router.post('/businesses/:id/close', closeBusiness);
+router.get('/businesses/:id', getBusinessInternal);
+
 export default router;

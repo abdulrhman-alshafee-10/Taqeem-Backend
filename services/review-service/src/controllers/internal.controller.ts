@@ -40,3 +40,28 @@ export async function getBusinessAggregates(req: Request, res: Response) {
     recentReviews: mappedReviews,
   });
 }
+
+export async function getReviewInternal(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const review = await Review.findById(id);
+    if (!review) return res.status(404).end();
+    res.json(review);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+export async function rebindReviews(req: Request, res: Response) {
+  try {
+    const { from, to } = req.body;
+    await Review.updateMany(
+      { businessId: from },
+      { $set: { businessId: to } }
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+

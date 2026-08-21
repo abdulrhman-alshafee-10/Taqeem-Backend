@@ -127,3 +127,16 @@ export async function askBusiness(req: Request, res: Response) {
     res.status(500).json({ error: "Failed to answer question" });
   }
 }
+
+export async function getBusinessInternal(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const business = await prisma.business.findUnique({
+      where: { id },
+    });
+    if (!business) return res.status(404).end();
+    res.json(business);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}

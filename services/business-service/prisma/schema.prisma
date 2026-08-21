@@ -14,6 +14,21 @@ enum ClaimStatus {
   REJECTED
 }
 
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum BusinessStatus {
+  OPEN
+  TEMPORARILY_CLOSED
+  PERMANENTLY_CLOSED
+}
+
+
+
 enum PriceTier {
   ONE     // $
   TWO     // $$
@@ -76,6 +91,9 @@ model Business {
 
   isReservationsEnabled Boolean @default(false) @map("is_reservations_enabled")
   isActive      Boolean      @default(true) @map("is_active")
+  businessStatus BusinessStatus @default(OPEN) @map("business_status")
+  closedAt       DateTime? @map("closed_at")
+  mergedIntoId   String?   @map("merged_into_id") @db.Uuid
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt      @map("updated_at")
 

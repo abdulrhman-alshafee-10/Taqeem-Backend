@@ -16,9 +16,12 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
 
+import { internalRoutes } from "./routes/internal.routes.js";
+
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/media",   mediaRoutes);
 app.use("/api/owner",   ownerRoutes);
+app.use("/internal",    internalRoutes);
 
 app.get("/internal/businesses/:businessId/aggregates", getBusinessAggregates as any);
 

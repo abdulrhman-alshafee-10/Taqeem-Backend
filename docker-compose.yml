@@ -345,3 +345,25 @@ services:
       - postgres
       - rabbitmq
     networks: [taqeem_network]
+
+  moderation-service:
+    build:
+      context: .
+      dockerfile: services/moderation-service/Dockerfile
+    container_name: taqeem_moderation_service
+    restart: unless-stopped
+    environment:
+      PORT: 4012
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_moderation?schema=public
+      RABBITMQ_URL: amqp://taqeem:taqeem_pw@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+      REVIEW_SERVICE_URL: http://review-service:4003
+      BUSINESS_SERVICE_URL: http://business-service:4002
+      CONTENT_SERVICE_URL: http://social-service:4010
+      RESERVATION_SERVICE_URL: http://reservation-service:4007
+    ports: ["4012:4012"]
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    networks: [taqeem_network]
