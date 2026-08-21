@@ -35,3 +35,72 @@ model AlertRule {
   @@index([userId, status])
   @@index([kind, status])
 }
+
+enum NotifChannel {
+  EMAIL
+  PUSH
+  SMS
+  INAPP
+}
+
+enum NotifStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  SUPPRESSED
+}
+
+model Notification {
+  id          String        @id @default(uuid()) @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  type        String
+  channel     NotifChannel
+  status      NotifStatus   @default(QUEUED)
+  subject     String?
+  body        String
+  data        Json          @default("{}")
+  providerRef String?       @map("provider_ref")
+  error       String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+model PushToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  platform   String
+  token      String   @unique
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime?
+
+  @@index([userId])
+}
+
+model NotifPreference {
+  userId    String       @map("user_id") @db.Uuid
+  type      String
+  channel   NotifChannel
+  enabled   Boolean      @default(true)
+
+  @@id([userId, type, channel])
+}
+
+model InAppInbox {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  type      String
+  title     String
+  body      String
+  deepLink  String?
+  seenAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

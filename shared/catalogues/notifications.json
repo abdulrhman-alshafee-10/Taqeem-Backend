@@ -1,0 +1,47 @@
+{
+  "groups": [
+    {
+      "key": "reservations",
+      "labelEn": "Reservations",
+      "labelAr": "الحجوزات",
+      "types": [
+        "reservation.confirmed",
+        "reservation.reminder_24h",
+        "reservation.reminder_2h",
+        "reservation.cancelled",
+        "waitlist.offered"
+      ]
+    },
+    {
+      "key": "orders",
+      "labelEn": "Orders",
+      "types": ["order.accepted","order.ready","order.completed","order.cancelled"]
+    },
+    {
+      "key": "reviews",
+      "labelEn": "Reviews",
+      "types": ["review.replied","review.thread.author_replied","review.helpful_voted"]
+    },
+    {
+      "key": "social",
+      "labelEn": "Social",
+      "types": ["follow.created","rec.sent","meetup.reminder_due","list.item_added"]
+    },
+    {
+      "key": "owner",
+      "labelEn": "Owner",
+      "types": ["insight.generated","owner.post_published","question.aging","subscription.past_due"]
+    },
+    {
+      "key": "system",
+      "labelEn": "System",
+      "types": ["user.level_up","gift_card.redeemed","payment.refunded"]
+    }
+  ],
+  "channels": ["EMAIL","PUSH","SMS","INAPP"],
+  "defaults": {
+    "reservation.reminder_2h":     { "EMAIL": true, "PUSH": true, "SMS": false, "INAPP": true },
+    "reservation.reminder_24h":    { "EMAIL": true, "PUSH": true, "SMS": false, "INAPP": true },
+    "owner.post_published":        { "EMAIL": false, "PUSH": true, "INAPP": true }
+  }
+}
