@@ -13,13 +13,27 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api/agent", agentRoutes);
 app.use("/internal", internalRoutes);
 
-await initPublisher();
-await startMediaTagger();
-
-// Idempotent — checks RediSearch index existence before rebuilding
-if (process.env.INDEX_HELP_DOCS_ON_START === "true") {
-  await buildHelpIndex(path.join(process.cwd(), "knowledge"));
-}
+import { startAspectScorer } from "./workers/aspect-scorer.js";
+import { startSummaryGenerator } from "./workers/summary-generator.js";
+import { startRagIndexer } from "./workers/rag-indexer.js";
+import { startFraudDetector } from "./workers/fraud-detector.js";
 
 const PORT = Number(process.env.PORT || 4006);
-app.listen(PORT, () => console.log(`agent-service on :${PORT}`));
+
+async function startWorkers() {
+  await initPublisher();
+  await startMediaTagger();
+  await startAspectScorer();
+  await startSummaryGenerator();
+  await startRagIndexer();
+  await startFraudDetector();
+
+  // Idempotent — checks RediSearch index existence before rebuilding
+  if (process.env.INDEX_HELP_DOCS_ON_START === "true") {
+    await buildHelpIndex(path.join(process.cwd(), "knowledge"));
+  }
+
+  app.listen(PORT, () => console.log(`agent-service on :${PORT}`));
+}
+
+startWorkers().catch(console.error);

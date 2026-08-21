@@ -15,4 +15,13 @@ r.post  ("/chat/sync",        chatSync);
 r.get   ("/threads/:threadId", requireAuth as any, getThread as any);
 r.delete("/threads/:threadId", requireAuth as any, deleteThread as any);
 
+import { createPlan, bookPlan } from "../controllers/plan.controller.js";
+import { generateReviewScaffold } from "../controllers/review-helper.controller.js";
+import { checkReviewGuidelines } from "../controllers/guideline.controller.js";
+
+r.post("/plans", createPlan);
+r.post("/plans/:planId/book", requireAuth as any, bookPlan);
+r.post("/review-helper/scaffold", generateReviewScaffold);
+r.post("/review/check", checkReviewGuidelines);
+
 export default r;

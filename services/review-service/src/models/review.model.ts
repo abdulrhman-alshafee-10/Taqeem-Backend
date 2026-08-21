@@ -101,6 +101,9 @@ const ReviewSchema = new mongoose.Schema(
     thread: { type: [ThreadMessageSchema], default: [] },
     threadClosed: { type: Boolean, default: false },
 
+    // Phase 13.2: AI Aspect Sentiment
+    inferredAspects: { type: AspectsSchema, default: null },
+
     // Moderation
     isFlagged:  { type: Boolean, default: false, index: true },
     isDeleted:  { type: Boolean, default: false, index: true },

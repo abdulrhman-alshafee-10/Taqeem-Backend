@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { 
   getMenu, createMenu, updateMenuMetadata, addSection, 
-  addItem, updateItem, reorderMenu, importOcr
+  addItem, updateItem, reorderMenu, importOcr, importOcrConfirm
 } from "../controllers/menu.controller.js";
 import { requireBusinessPermission } from "../middleware/permissions.js";
 
@@ -18,5 +18,6 @@ router.post("/owner/sections/:sectionId/items", requireBusinessPermission("editP
 router.patch("/owner/items/:itemId", requireBusinessPermission("editProfile"), updateItem);
 router.put("/owner/menus/:menuId/order", requireBusinessPermission("editProfile"), reorderMenu);
 router.post("/owner/menus/:menuId/import-ocr", requireBusinessPermission("editProfile"), importOcr);
+router.post("/owner/menus/:menuId/import-ocr/confirm", requireBusinessPermission("editProfile"), importOcrConfirm);
 
 export default router;

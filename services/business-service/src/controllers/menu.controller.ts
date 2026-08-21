@@ -180,7 +180,61 @@ export async function reorderMenu(req: Request, res: Response) {
   res.json({ success: true });
 }
 
+import axios from "axios";
+
 export async function importOcr(req: Request, res: Response) {
-  // Phase 13 mock
-  res.json({ draft: { sections: [] } });
+  try {
+    const { photoUrl } = req.body;
+    if (!photoUrl) return res.status(400).json({ error: "Missing photoUrl" });
+
+    const agentUrl = process.env.AGENT_SERVICE_URL || "http://agent-service:4006";
+    const { data } = await axios.post(`${agentUrl}/internal/ocr/menu`, { photoUrl });
+    
+    res.json(data);
+  } catch (err: any) {
+    console.error("importOcr error:", err.message);
+    res.status(500).json({ error: "Failed to parse menu" });
+  }
+}
+
+export async function importOcrConfirm(req: Request, res: Response) {
+  try {
+    const { menuId } = req.params;
+    const { draft, replaceExisting } = req.body;
+
+    const menu = await prisma.menu.findUnique({ where: { id: menuId } });
+    if (!menu) return res.status(404).json({ error: "Menu not found" });
+
+    await prisma.$transaction(async (tx) => {
+      if (replaceExisting) {
+        await tx.menuSection.deleteMany({ where: { menuId } });
+      }
+      for (const [i, s] of draft.sections.entries()) {
+        const sec = await tx.menuSection.create({ data: { menuId, title: s.title, position: i } });
+        for (const [j, item] of s.items.entries()) {
+          const it = await tx.menuItem.create({
+            data: {
+              sectionId: sec.id,
+              name: item.name,
+              description: item.description,
+              basePrice: item.basePrice,
+              dietary: item.dietary,
+              position: j,
+            },
+          });
+          if (item.variants) {
+            for (const v of item.variants) {
+              await tx.menuVariant.create({ data: { itemId: it.id, label: v.label, priceDelta: v.priceDelta } });
+            }
+          }
+        }
+      }
+    });
+
+    await publishEvent("menu.updated", { menuId, businessId: menu.businessId, source: "ocr" });
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("importOcrConfirm error:", err.message);
+    res.status(500).json({ error: "Failed to confirm menu draft" });
+  }
 }

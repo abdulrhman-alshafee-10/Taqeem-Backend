@@ -68,6 +68,8 @@ model Business {
   hours         BusinessHours[]
   claims        BusinessClaim[]
   members       BusinessMember[]
+  summary       BusinessSummary?
+  summaryHistory BusinessSummaryHistory[]
 
   groupId       String?        @map("group_id") @db.Uuid
   group         BusinessGroup? @relation(fields: [groupId], references: [id])
@@ -270,6 +272,30 @@ model WeeklyInsight {
   createdAt  DateTime @default(now())
 
   @@unique([businessId, weekStart])
+}
+
+model BusinessSummary {
+  businessId  String   @id @db.Uuid
+  data        Json
+  reviewsUpTo DateTime @map("reviews_up_to")
+  updatedAt   DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("business_summaries")
+}
+
+model BusinessSummaryHistory {
+  id          String   @id @default(uuid()) @db.Uuid
+  businessId  String   @map("business_id") @db.Uuid
+  data        Json
+  reviewsUpTo DateTime @map("reviews_up_to")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, createdAt])
+  @@map("business_summary_histories")
 }
 
 enum DealType {

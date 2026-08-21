@@ -7,6 +7,7 @@ import postRoutes from "./routes/post.routes.js";
 import qaRoutes from "./routes/qa.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import dealRoutes from "./routes/deal.routes.js";
+import internalRoutes from "./routes/internal.routes.js";
 import { initPublisher } from "@taqeem/shared/events/publisher.js";
 import { initConsumer } from "./events/consumer.js";
 
@@ -14,6 +15,7 @@ const app = express();
 app.use(express.json({ limit: "200kb" }));
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
 
+app.use("/internal", internalRoutes);
 app.use("/api/businesses", businessRoutes);
 app.use("/api/owner",      ownerRoutes);
 app.use("/api", groupRoutes);

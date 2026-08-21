@@ -20,9 +20,9 @@ export async function initConsumer() {
 }
 
 async function onReviewCreated({ businessId, aspects, rating }: any) {
-  await prisma.$transaction(async (tx) => {
+  const reviewCount = await prisma.$transaction(async (tx) => {
     const b = await tx.business.findUnique({ where: { id: businessId } });
-    if (!b) return;
+    if (!b) return 0;
 
     const nAll = b.reviewCount + 1;
     const avgAll = (b.avgRating * b.reviewCount + rating) / nAll;
@@ -41,8 +41,12 @@ async function onReviewCreated({ businessId, aspects, rating }: any) {
       }
     }
 
-    await tx.business.update({ where: { id: businessId }, data: patch });
+    const updated = await tx.business.update({ where: { id: businessId }, data: patch });
+    return updated.reviewCount;
   });
 
   await publishEvent("business.aspects_updated", { businessId });
+  if (reviewCount > 0 && reviewCount % 5 === 0) {
+    await publishEvent("business.summary_requested", { businessId });
+  }
 }

@@ -20,6 +20,11 @@ export async function startReviewConsumer() {
             }
           }
         );
+      } else if (type === "review.aspect_scored") {
+        await Review.updateOne(
+          { _id: payload.reviewId },
+          { $set: { inferredAspects: payload.aspects } }
+        );
       }
     },
   });

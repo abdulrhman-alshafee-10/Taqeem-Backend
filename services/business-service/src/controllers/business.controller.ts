@@ -95,3 +95,35 @@ export async function toggleReservations(req: Request, res: Response) {
   await publishEvent("business.updated", { id: crypto.randomUUID(), business: updated });
   res.json({ isReservationsEnabled: updated.isReservationsEnabled });
 }
+
+export async function getSummary(req: Request, res: Response) {
+  const summary = await prisma.businessSummary.findUnique({
+    where: { businessId: req.params.id }
+  });
+  
+  if (!summary) return res.status(404).json({ error: "Summary not found" });
+  res.json(summary);
+}
+
+import axios from "axios";
+
+export async function askBusiness(req: Request, res: Response) {
+  try {
+    const businessId = req.params.id;
+    const { question } = req.body;
+    if (!question) return res.status(400).json({ error: "Question required" });
+    
+    // Check if business exists first? Not strictly necessary if agent service checks it.
+    
+    const agentUrl = process.env.AGENT_SERVICE_URL || "http://agent-service:4006";
+    const { data } = await axios.post(`${agentUrl}/internal/rag/ask`, {
+      businessId,
+      question
+    });
+    
+    res.json(data);
+  } catch (err: any) {
+    console.error("Ask Business error:", err.message);
+    res.status(500).json({ error: "Failed to answer question" });
+  }
+}
