@@ -1,0 +1,35 @@
+groups:
+  - name: burn-rate.gateway
+    rules:
+      # Fast burn: > 14.4x budget consumption
+      - alert: GatewayFastBurn
+        expr: |
+          (
+            sum(rate(http_requests_total{service="gateway",status_code=~"5.."}[1h]))
+            / sum(rate(http_requests_total{service="gateway"}[1h]))
+          ) > 14.4 * 0.001
+          and
+          (
+            sum(rate(http_requests_total{service="gateway",status_code=~"5.."}[5m]))
+            / sum(rate(http_requests_total{service="gateway"}[5m]))
+          ) > 14.4 * 0.001
+        for: 2m
+        labels:
+          severity: critical
+          page:     "true"
+
+      # Slow burn: > 3x budget consumption
+      - alert: GatewaySlowBurn
+        expr: |
+          (
+            sum(rate(http_requests_total{service="gateway",status_code=~"5.."}[6h]))
+            / sum(rate(http_requests_total{service="gateway"}[6h]))
+          ) > 3 * 0.001
+          and
+          (
+            sum(rate(http_requests_total{service="gateway",status_code=~"5.."}[30m]))
+            / sum(rate(http_requests_total{service="gateway"}[30m]))
+          ) > 3 * 0.001
+        for: 15m
+        labels:
+          severity: warning

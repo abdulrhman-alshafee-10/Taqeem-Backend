@@ -1,3 +1,4 @@
+import "@taqeem/shared/tracing/tracing.js";
 import express, { Request, Response } from "express";
 import listRoutes from "./routes/list.routes.js";
 import followRoutes from "./routes/follow.routes.js";
@@ -9,7 +10,15 @@ import { connectRedis } from "./redis.js";
 
 const app = express();
 app.use(express.json({ limit: "200kb" }));
+
+app.use(httpLogger(process.env.OTEL_SERVICE_NAME ?? "social-service"));
+app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "social-service"));
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
+
+app.get("/metrics", async (_req: any, res: any) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
+});
 
 app.use("/api/lists", listRoutes);
 app.use("/api/social", followRoutes);
@@ -22,6 +31,10 @@ app.use("/api/meetups", meetupRoutes);
 const PORT = process.env.PORT || 4010;
 
 import { startSocialConsumers } from "./events/consumer.js";
+
+import { httpLogger } from "@taqeem/shared/logger/httpLogger.js";
+import { httpMetricsMiddleware } from "@taqeem/shared/metrics/httpMetricsMiddleware.js";
+import { register } from "@taqeem/shared/metrics/metrics.js";
 
 async function start() {
   await initPublisher();

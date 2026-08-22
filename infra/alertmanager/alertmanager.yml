@@ -1,0 +1,46 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: ${SLACK_WEBHOOK_URL}
+
+route:
+  group_by:     ["alertname", "team"]
+  group_wait:   30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: slack-default
+
+  routes:
+    - matchers:
+        - severity = critical
+        - page = "true"
+      receiver: pagerduty-critical
+      continue: true
+
+    - matchers:
+        - team = payments
+      receiver: slack-payments
+
+    - matchers:
+        - team = ai
+      receiver: slack-ai
+
+receivers:
+  - name: slack-default
+    slack_configs:
+      - channel:       "#alerts"
+        title:         "{{ .GroupLabels.alertname }}"
+        text:          "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+        send_resolved: true
+
+  - name: slack-payments
+    slack_configs:
+      - channel: "#payments-alerts"
+
+  - name: slack-ai
+    slack_configs:
+      - channel: "#ai-alerts"
+
+  - name: pagerduty-critical
+    pagerduty_configs:
+      - service_key: ${PAGERDUTY_SERVICE_KEY}
+        description: "{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}"

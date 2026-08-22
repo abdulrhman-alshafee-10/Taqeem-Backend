@@ -1,3 +1,4 @@
+import "@taqeem/shared/tracing/tracing.js";
 import express, { Request, Response } from "express";
 import businessRoutes from "./routes/business.routes.js";
 import ownerRoutes from "./routes/owner.routes.js";
@@ -13,7 +14,15 @@ import { initConsumer } from "./events/consumer.js";
 
 export const app = express();
 app.use(express.json({ limit: "200kb" }));
+
+app.use(httpLogger(process.env.OTEL_SERVICE_NAME ?? "business-service"));
+app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "business-service"));
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
+
+app.get("/metrics", async (_req: any, res: any) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
+});
 
 app.use("/internal", internalRoutes);
 app.use("/api/businesses", businessRoutes);
@@ -28,6 +37,10 @@ app.use("/api/businesses/:businessId/deals", dealRoutes);
 const PORT = process.env.PORT || 4002;
 
 import { startBadgeConsumers } from "./workers/business-badge-awarder.js";
+
+import { httpLogger } from "@taqeem/shared/logger/httpLogger.js";
+import { httpMetricsMiddleware } from "@taqeem/shared/metrics/httpMetricsMiddleware.js";
+import { register } from "@taqeem/shared/metrics/metrics.js";
 
 export async function start() {
   await initPublisher();

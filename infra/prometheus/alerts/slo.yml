@@ -1,0 +1,83 @@
+groups:
+  - name: slo.gateway
+    rules:
+      - alert: GatewayHighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{service="gateway",status_code=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{service="gateway"}[5m]))
+          ) > 0.01
+        for: 2m
+        labels:
+          severity: critical
+          team:     platform
+        annotations:
+          summary:     "Gateway error rate > 1 %"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+          runbook:     "https://wiki.taqeem.app/runbooks/gateway-high-error-rate"
+
+      - alert: GatewayHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{service="gateway"}[5m])) by (le)
+          ) > 0.15
+        for: 5m
+        labels:
+          severity: warning
+          team:     platform
+        annotations:
+          summary: "Gateway p95 latency > 150 ms"
+          runbook: "https://wiki.taqeem.app/runbooks/gateway-high-latency"
+
+  - name: slo.payment
+    rules:
+      - alert: PaymentHighFailureRate
+        expr: |
+          (
+            sum(rate(payments_processed_total{status="failed"}[5m]))
+            /
+            sum(rate(payments_processed_total[5m]))
+          ) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          team:     payments
+        annotations:
+          summary: "Payment failure rate > 5 %"
+          runbook: "https://wiki.taqeem.app/runbooks/payment-failure"
+
+  - name: slo.rabbitmq
+    rules:
+      - alert: DLQHasMessages
+        expr: rabbitmq_queue_messages{queue="dlq.events.queue"} > 0
+        for: 5m
+        labels:
+          severity: warning
+          team:     platform
+        annotations:
+          summary: "DLQ has {{ $value }} unprocessed messages"
+          runbook: "https://wiki.taqeem.app/runbooks/dlq-replay"
+
+      - alert: ConsumerLag
+        expr: rabbitmq_queue_messages > 10000
+        for: 2m
+        labels:
+          severity: critical
+          team:     platform
+        annotations:
+          summary: "Queue {{ $labels.queue }} has {{ $value }} pending messages"
+
+  - name: slo.ai-agent
+    rules:
+      - alert: AgentHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(agent_query_duration_seconds_bucket[5m])) by (le)
+          ) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team:     ai
+        annotations:
+          summary: "Agent p95 first-token latency > 800 ms"

@@ -1,0 +1,61 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+rule_files:
+  - "alerts/*.yml"
+
+scrape_configs:
+  - job_name: "taqeem-gateway"
+    static_configs: [{ targets: ["gateway:3000"] }]
+    metrics_path: /metrics
+
+  - job_name: "taqeem-user-service"
+    static_configs: [{ targets: ["user-service:4001"] }]
+
+  - job_name: "taqeem-business-service"
+    static_configs: [{ targets: ["business-service:4002"] }]
+
+  - job_name: "taqeem-review-service"
+    static_configs: [{ targets: ["review-service:4003"] }]
+
+  - job_name: "taqeem-search-service"
+    static_configs: [{ targets: ["search-service:4004"] }]
+
+  - job_name: "taqeem-analytics-service"
+    static_configs: [{ targets: ["analytics-service:4005"] }]
+
+  - job_name: "taqeem-agent-service"
+    static_configs: [{ targets: ["agent-service:4006"] }]
+
+  - job_name: "taqeem-reservation-service"
+    static_configs: [{ targets: ["reservation-service:4007"] }]
+
+  - job_name: "taqeem-payment-service"
+    static_configs: [{ targets: ["payment-service:4008"] }]
+
+  - job_name: "taqeem-notification-service"
+    static_configs: [{ targets: ["notification-service:4009"] }]
+
+  - job_name: "taqeem-social-service"
+    static_configs: [{ targets: ["social-service:4010"] }]
+
+  - job_name: "taqeem-content-service"
+    static_configs: [{ targets: ["content-service:4011"] }]
+
+  - job_name: "taqeem-moderation-service"
+    static_configs: [{ targets: ["moderation-service:4012"] }]
+
+  - job_name: "taqeem-feed-service"
+    static_configs: [{ targets: ["feed-service:4013"] }]
+
+  - job_name: "rabbitmq"
+    static_configs: [{ targets: ["rabbitmq:15692"] }]
+
+  - job_name: "postgres"
+    static_configs: [{ targets: ["postgres-exporter:9187"] }]

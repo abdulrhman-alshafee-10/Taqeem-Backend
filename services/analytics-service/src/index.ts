@@ -1,3 +1,4 @@
+import "@taqeem/shared/tracing/tracing.js";
 import express, { Request, Response } from "express";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import leaderboardRoutes from "./routes/leaderboard.routes.js";
@@ -10,9 +11,21 @@ import { setupTrending } from "./worker/trending.worker.js";
 import { setupLeaderboardWorker } from "./worker/leaderboard.js";
 import { redis } from "./redis.js";
 
+import { httpLogger } from "@taqeem/shared/logger/httpLogger.js";
+import { httpMetricsMiddleware } from "@taqeem/shared/metrics/httpMetricsMiddleware.js";
+import { register } from "@taqeem/shared/metrics/metrics.js";
+
 const app = express();
 app.use(express.json({ limit: "1mb" }));
+
+app.use(httpLogger(process.env.OTEL_SERVICE_NAME ?? "analytics-service"));
+app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "analytics-service"));
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
+
+app.get("/metrics", async (_req: any, res: any) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
+});
 
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/owner",     analyticsRoutes);   // exposes /api/owner/businesses/:id/analytics

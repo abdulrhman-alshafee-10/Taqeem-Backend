@@ -1,0 +1,28 @@
+groups:
+  - name: infrastructure
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"taqeem-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+
+      - alert: HighMemoryUsage
+        expr: |
+          process_resident_memory_bytes{job=~"taqeem-.*"}
+          > 512 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.job }} using {{ $value | humanize1024 }}B RAM"
+
+      - alert: EventLoopLag
+        expr: nodejs_eventloop_lag_seconds{job=~"taqeem-.*"} > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.job }} event loop lagging {{ $value }}s"

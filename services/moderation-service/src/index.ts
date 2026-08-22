@@ -1,3 +1,8 @@
+
+import { httpLogger } from "@taqeem/shared/logger/httpLogger.js";
+import { httpMetricsMiddleware } from "@taqeem/shared/metrics/httpMetricsMiddleware.js";
+import { register } from "@taqeem/shared/metrics/metrics.js";
+import "@taqeem/shared/tracing/tracing.js";
 import express from 'express';
 import cors from 'cors';
 import { reportRoutes } from './routes/report.routes';
@@ -12,6 +17,9 @@ export const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use(httpLogger(process.env.OTEL_SERVICE_NAME ?? "moderation-service"));
+app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "moderation-service"));
 
 // Apply routes
 app.use('/api/reports', reportRoutes);
