@@ -19,8 +19,12 @@ const REFRESH_TTL_DAYS = 30;
 
 export function signAccessToken(user: { id: string, role: string, email: string }) {
   if (!PRIVATE_KEY) throw new Error("JWT Private Key not loaded");
+  
+  const jti = crypto.randomUUID();
+  const kid = process.env.JWT_KID || "default";
+
   return jwt.sign(
-    { role: user.role, email: user.email },
+    { role: user.role, email: user.email, jti },
     PRIVATE_KEY,
     {
       algorithm: "RS256",
@@ -28,6 +32,7 @@ export function signAccessToken(user: { id: string, role: string, email: string 
       issuer: "taqeem.user-service",
       audience: "taqeem.api",
       expiresIn: "1h",
+      keyid: kid,
     }
   );
 }

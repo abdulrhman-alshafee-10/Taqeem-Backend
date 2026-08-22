@@ -1,27 +1,7 @@
-FROM node:20
+FROM node:22-alpine AS production
+RUN addgroup -S taqeem && adduser -S -G taqeem taqeem
+USER taqeem
 WORKDIR /app
-
-# Copy root configurations
-COPY package*.json ./
-COPY tsconfig.base.json ./
-
-# Copy shared library
-COPY shared ./shared
-
-# Copy business service
-COPY services/business-service ./services/business-service
-
-# Install dependencies
-RUN npm install
-
-# Build shared library
-WORKDIR /app/shared
-RUN npm run build
-
-# Build business service
-WORKDIR /app/services/business-service
-RUN npx prisma generate
-RUN npm run build
-
-EXPOSE 4002
+COPY --chown=taqeem:taqeem . .
+RUN npm install --omit=dev
 CMD ["node", "dist/index.js"]

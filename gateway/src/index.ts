@@ -1,27 +1,30 @@
 import "../../shared/tracing/tracing.js";
 import express, { Request, Response } from "express";
-import helmet from "helmet";
-import cors from "cors";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { applySecurity } from "./middleware/security.js";
 
 import { routeTable } from "./config/routes.js";
 import { requestId } from "./middleware/requestId.js";
 import { globalLimiter, authLimiter } from "./middleware/rateLimit.js";
 import { authenticate } from "./middleware/auth.js";
+import { checkTokenBlocklist } from "./middleware/tokenBlocklist.js";
 import { tracingMiddleware } from "./middleware/tracing.js";
 import { httpLogger } from "../../shared/logger/httpLogger.js";
 import { httpMetricsMiddleware } from "../../shared/metrics/httpMetricsMiddleware.js";
 import { register } from "../../shared/metrics/metrics.js";
+import { jwksRouter } from "./routes/jwks.js";
 
 const app = express();
 
-app.disable("x-powered-by");
-app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN?.split(",") ?? "*" }));
+applySecurity(app);
 app.use(tracingMiddleware);
 app.use(httpLogger(process.env.OTEL_SERVICE_NAME ?? "gateway"));
 app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "gateway"));
 app.use(globalLimiter);
+
+// JWKS Endpoint for Auth Hardening
+app.use(jwksRouter);
+
 
 // Tighter limits on auth endpoints
 app.use(["/api/users/login", "/api/users/register"], authLimiter);
@@ -37,8 +40,10 @@ for (const route of routeTable) {
 
   if (route.auth === "required") {
     middlewares.push(authenticate({ required: true, roles: route.roles }));
+    middlewares.push(checkTokenBlocklist);
   } else if (route.auth === "optional" || route.auth === "mixed") {
     middlewares.push(authenticate({ required: false }));
+    middlewares.push(checkTokenBlocklist);
   }
 
   // Removed req.url mutation

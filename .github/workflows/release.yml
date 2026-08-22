@@ -1,0 +1,42 @@
+name: SBOM Generation (Release)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - agent-service
+          - analytics-service
+          - business-service
+          - content-service
+          - feed-service
+          - moderation-service
+          - notification-service
+          - order-service
+          - payment-service
+          - reservation-service
+          - review-service
+          - reward-service
+          - search-service
+          - social-service
+          - user-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t taqeem/${{ matrix.service }}:${{ github.sha }} services/${{ matrix.service }}
+
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          image: "taqeem/${{ matrix.service }}:${{ github.sha }}"
+          format: "spdx-json"
+          output-file: "sbom-${{ matrix.service }}.spdx.json"
+          artifact-name: "sbom-${{ matrix.service }}"

@@ -1,19 +1,7 @@
-FROM node:20-alpine
+FROM node:22-alpine AS production
+RUN addgroup -S taqeem && adduser -S -G taqeem taqeem
+USER taqeem
 WORKDIR /app
-
-COPY package*.json ./
-COPY tsconfig.base.json ./
-COPY shared ./shared
-COPY services/review-service ./services/review-service
-
-RUN npm install
-
-# Build shared library
-WORKDIR /app/shared
-RUN npm run build
-
-WORKDIR /app/services/review-service
-RUN npm run build
-
-EXPOSE 4003
+COPY --chown=taqeem:taqeem . .
+RUN npm install --omit=dev
 CMD ["node", "dist/index.js"]

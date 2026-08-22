@@ -1,5 +1,6 @@
 import CircuitBreaker from "opossum";
-import { logger } from "../logger/logger.js";
+import { createLogger } from "../logger/logger.js";
+const logger = createLogger("circuit-breaker");
 import { Counter, Gauge } from "prom-client";
 import { register } from "../metrics/metrics.js";
 

@@ -1,0 +1,184 @@
+name: Deploy Pipeline
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  # ── Detect changed services (same as PR pipeline) ─────────────────────────
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 2 }
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            gateway:             ["gateway/**"]
+            user-service:        ["services/user-service/**"]
+            business-service:    ["services/business-service/**"]
+            review-service:      ["services/review-service/**"]
+            search-service:      ["services/search-service/**"]
+            analytics-service:   ["services/analytics-service/**"]
+            agent-service:       ["services/agent-service/**"]
+            reservation-service: ["services/reservation-service/**"]
+            payment-service:     ["services/payment-service/**"]
+            notification-service: ["services/notification-service/**"]
+            social-service:      ["services/social-service/**"]
+            content-service:     ["services/content-service/**"]
+            moderation-service:  ["services/moderation-service/**"]
+            feed-service:        ["services/feed-service/**"]
+
+  # ── Build, tag and push images ─────────────────────────────────────────────
+  build-and-push:
+    needs: changes
+    if: ${{ needs.changes.outputs.services != '[]' }}
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.services) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: services/${{ matrix.service }}
+          push:    true
+          tags:    |
+            taqeem/${{ matrix.service }}:${{ github.sha }}
+            taqeem/${{ matrix.service }}:latest
+          cache-from: type=registry,ref=taqeem/${{ matrix.service }}:latest
+          cache-to:   type=inline
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image:         "taqeem/${{ matrix.service }}:${{ github.sha }}"
+          format:        "spdx-json"
+          artifact-name: "sbom-${{ matrix.service }}-${{ github.sha }}"
+
+  # ── Pact provider verification ─────────────────────────────────────────────
+  contract-verify:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "npm" }
+      - run: npm ci
+      - name: Verify Pact contracts
+        run: npx vitest run tests/contract/providers
+        env:
+          PACT_BROKER_BASE_URL:      ${{ secrets.PACT_BROKER_BASE_URL }}
+          PACT_BROKER_TOKEN:         ${{ secrets.PACT_BROKER_TOKEN }}
+          PACT_PROVIDER_VERSION:     ${{ github.sha }}
+          PACT_PROVIDER_BRANCH:      master
+
+  # ── Deploy to staging ──────────────────────────────────────────────────────
+  deploy-staging:
+    needs: [build-and-push, contract-verify]
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.services) }}
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:        ${{ secrets.STAGING_VPS_HOST }}
+          username:    deploy
+          key:         ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/taqeem
+            export IMAGE_TAG=${{ github.sha }}
+            bash scripts/deploy.sh ${{ matrix.service }} $IMAGE_TAG
+
+  # ── Staging smoke test ─────────────────────────────────────────────────────
+  smoke-test-staging:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "npm" }
+      - run: npm ci
+      - name: Run smoke test
+        run: k6 run tests/load/smoke.js
+        env:
+          BASE_URL:       https://staging.taqeem.app
+          INTERNAL_TOKEN: ${{ secrets.INTERNAL_TOKEN }}
+
+  # ── Can-I-Deploy gate ──────────────────────────────────────────────────────
+  can-i-deploy:
+    needs: smoke-test-staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Pact can-i-deploy
+        run: |
+          npx pact-broker can-i-deploy \
+            --pacticipant all \
+            --version ${{ github.sha }} \
+            --to-environment production \
+            --broker-base-url ${{ secrets.PACT_BROKER_BASE_URL }} \
+            --broker-token    ${{ secrets.PACT_BROKER_TOKEN }}
+
+  # ── Deploy to production (requires manual approval) ───────────────────────
+  deploy-production:
+    needs: [smoke-test-staging, can-i-deploy]
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.services) }}
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://api.taqeem.app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to production via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:        ${{ secrets.PRODUCTION_VPS_HOST }}
+          username:    deploy
+          key:         ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/taqeem
+            export IMAGE_TAG=${{ github.sha }}
+            bash scripts/deploy.sh ${{ matrix.service }} $IMAGE_TAG
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook:      ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "✅ *${{ matrix.service }}* deployed to production (`${{ github.sha }}`)"
+            }
+
+      - name: Notify Slack on failure (rollback via SSH)
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.PRODUCTION_VPS_HOST }}
+          username: deploy
+          key:      ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/taqeem
+            PREV_TAG=$(cat .last_stable_tag_${{ matrix.service }} 2>/dev/null || echo "latest")
+            IMAGE_TAG=$PREV_TAG bash scripts/deploy.sh ${{ matrix.service }}
+            echo "Rollback to $PREV_TAG triggered for ${{ matrix.service }}"

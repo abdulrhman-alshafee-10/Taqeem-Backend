@@ -1,5 +1,7 @@
 import { publishEvent } from "../events/publisher.js";
-import { logger } from "../logger/logger.js";
+import { Model } from "mongoose";
+import { createLogger } from "../logger/logger.js";
+const logger = createLogger("mongo-poller");
 import { withRetry } from "../http/retry.js";
 
 const POLL_INTERVAL_MS = 1_000;

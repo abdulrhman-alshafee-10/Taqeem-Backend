@@ -1,0 +1,105 @@
+name: PR Quality Gates
+
+on:
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Detect changed services ────────────────────────────────────────────────
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            gateway:          ["gateway/**"]
+            user-service:     ["services/user-service/**"]
+            business-service: ["services/business-service/**"]
+            review-service:   ["services/review-service/**"]
+            search-service:   ["services/search-service/**"]
+            analytics-service: ["services/analytics-service/**"]
+            agent-service:    ["services/agent-service/**"]
+            reservation-service: ["services/reservation-service/**"]
+            payment-service:  ["services/payment-service/**"]
+            notification-service: ["services/notification-service/**"]
+            social-service:   ["services/social-service/**"]
+            content-service:  ["services/content-service/**"]
+            moderation-service: ["services/moderation-service/**"]
+            feed-service:     ["services/feed-service/**"]
+            shared:           ["shared/**"]
+
+  # ── Per-service quality gate ──────────────────────────────────────────────
+  service-checks:
+    needs: changes
+    if: ${{ needs.changes.outputs.services != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.services) }}
+    uses: ./.github/workflows/service-checks.yml
+    with:
+      service: ${{ matrix.service }}
+    secrets: inherit
+
+  # ── Shared layer checks (runs when shared/ changes) ───────────────────────
+  shared-checks:
+    needs: changes
+    if: ${{ contains(needs.changes.outputs.services, 'shared') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "npm" }
+      - run: npm ci
+      - run: npm run lint --workspace=shared
+      - run: npx vitest run shared --coverage
+        env: { NODE_ENV: test }
+
+  # ── Contract tests (consumer side) ────────────────────────────────────────
+  contract-publish:
+    needs: service-checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "npm" }
+      - run: npm ci
+      - name: Run Pact consumer tests
+        run: npx vitest run tests/contract/consumers
+        env:
+          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
+      - name: Publish Pacts
+        run: |
+          npx pact-broker publish tests/contract/pacts \
+            --broker-base-url ${{ secrets.PACT_BROKER_BASE_URL }} \
+            --broker-token    ${{ secrets.PACT_BROKER_TOKEN }} \
+            --consumer-app-version ${{ github.sha }} \
+            --branch ${{ github.head_ref }}
+
+  # ── Required status summary ───────────────────────────────────────────────
+  pr-gate:
+    needs: [service-checks, contract-publish]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all gates passed
+        run: |
+          if [[ "${{ needs.service-checks.result }}" != "success" && \
+                "${{ needs.service-checks.result }}" != "skipped" ]]; then
+            echo "Service checks failed" && exit 1
+          fi
+          if [[ "${{ needs.contract-publish.result }}" != "success" ]]; then
+            echo "Contract publish failed" && exit 1
+          fi
+          echo "All gates passed ✓"

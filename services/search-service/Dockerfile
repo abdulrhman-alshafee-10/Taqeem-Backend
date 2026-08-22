@@ -1,20 +1,7 @@
-FROM node:20-alpine
+FROM node:22-alpine AS production
+RUN addgroup -S taqeem && adduser -S -G taqeem taqeem
+USER taqeem
 WORKDIR /app
-
-COPY package*.json ./
-COPY tsconfig.base.json ./
-COPY shared ./shared
-COPY services/search-service ./services/search-service
-
-# Install dependencies
-RUN npm install
-
-# Build shared library
-WORKDIR /app/shared
-RUN npm run build
-
-WORKDIR /app/services/search-service
-RUN npm run build
-
-EXPOSE 4004
+COPY --chown=taqeem:taqeem . .
+RUN npm install --omit=dev
 CMD ["node", "dist/src/index.js"]

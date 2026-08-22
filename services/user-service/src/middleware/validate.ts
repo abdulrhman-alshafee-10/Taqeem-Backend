@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Request, Response, NextFunction } from "express";
+import { validate } from "@taqeem/shared/validation/validate.js";
 
 export const RegisterSchema = z.object({
   email: z.string().email(),
@@ -18,13 +18,4 @@ export const UpdateMeSchema = z.object({
   avatarUrl: z.string().url().optional(),
 });
 
-export function validate(schema: z.ZodSchema) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: "Validation failed", issues: parsed.error.issues });
-    }
-    req.body = parsed.data;
-    next();
-  };
-}
+export { validate };

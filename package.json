@@ -21,6 +21,7 @@
     "@pact-foundation/pact": "^17.1.2",
     "@playwright/test": "^1.62.1",
     "@types/node": "^20.0.0",
+    "snyk": "^1.1306.4",
     "tsx": "^4.7.1",
     "typescript": "^5.4.5",
     "vite-tsconfig-paths": "^6.1.1"

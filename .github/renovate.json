@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+
+  "schedule": ["after 9am on monday"],
+  "timezone": "Asia/Riyadh",
+
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch", "minor"],
+      "matchDepTypes":    ["dependencies"],
+      "automerge":        true,
+      "automergeType":    "pr",
+      "requiredStatusChecks": null
+    },
+    {
+      "matchUpdateTypes":    ["major"],
+      "automerge":           false,
+      "labels":              ["dependency-major"],
+      "reviewers":           ["@taqeem/platform"]
+    },
+    {
+      "matchPackageNames":   ["@prisma/client", "prisma"],
+      "automerge":           false,
+      "labels":              ["dependency-prisma"],
+      "reviewers":           ["@taqeem/backend"]
+    }
+  ],
+
+  "vulnerabilityAlerts": {
+    "enabled":  true,
+    "labels":   ["security"],
+    "assignees": ["@taqeem/platform"],
+    "schedule": ["at any time"]
+  },
+
+  "lockFileMaintenance": {
+    "enabled":   true,
+    "schedule":  ["before 6am on the first day of the month"]
+  }
+}

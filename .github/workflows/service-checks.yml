@@ -1,0 +1,117 @@
+name: Service Checks (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        required: true
+        type: string
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER:     taqeem
+          POSTGRES_PASSWORD: taqeem_pw
+          POSTGRES_DB:       taqeem_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mongo:
+        image: mongo:7
+        env:
+          MONGO_INITDB_ROOT_USERNAME: taqeem
+          MONGO_INITDB_ROOT_PASSWORD: taqeem_pw
+        options: >-
+          --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongosh --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --workspace=services/${{ inputs.service }}
+
+      - name: Unit tests + coverage
+        run: npx vitest run services/${{ inputs.service }} --coverage
+        env:
+          NODE_ENV:     test
+          DATABASE_URL: postgresql://taqeem:taqeem_pw@localhost:5432/taqeem_test
+          MONGO_URL:    mongodb://taqeem:taqeem_pw@localhost:27017/taqeem_test
+          REDIS_URL:    redis://localhost:6379/1
+
+      - name: Integration tests
+        run: npx vitest run tests/integration/${{ inputs.service }} --testTimeout=120000
+        env:
+          NODE_ENV:  test
+          REDIS_URL: redis://localhost:6379/1
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          flags:       ${{ inputs.service }}
+          fail_ci_if_error: false
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Snyk vulnerability scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: >-
+            --severity-threshold=high
+            --project-name=taqeem/${{ inputs.service }}
+            --file=services/${{ inputs.service }}/package.json
+
+  build-and-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t taqeem/${{ inputs.service }}:${{ github.sha }} \
+            services/${{ inputs.service }}
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref:  "taqeem/${{ inputs.service }}:${{ github.sha }}"
+          format:     "sarif"
+          output:     "trivy-${{ inputs.service }}.sarif"
+          severity:   "HIGH,CRITICAL"
+          exit-code:  "1"
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file:   "trivy-${{ inputs.service }}.sarif"
+          category:     ${{ inputs.service }}

@@ -1,0 +1,166 @@
+version: "3.9"
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "50m"
+      max-file: "5"
+  networks: [taqeem_network]
+
+services:
+  gateway:
+    <<: *service-defaults
+    image: taqeem/gateway:${IMAGE_TAG:-latest}
+    ports: ["3000:3000"]
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  user-service:
+    <<: *service-defaults
+    image: taqeem/user-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4001/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  business-service:
+    <<: *service-defaults
+    image: taqeem/business-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4002/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  review-service:
+    <<: *service-defaults
+    image: taqeem/review-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4003/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  search-service:
+    <<: *service-defaults
+    image: taqeem/search-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4004/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  analytics-service:
+    <<: *service-defaults
+    image: taqeem/analytics-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4005/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  agent-service:
+    <<: *service-defaults
+    image: taqeem/agent-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4006/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  reservation-service:
+    <<: *service-defaults
+    image: taqeem/reservation-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4007/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  payment-service:
+    <<: *service-defaults
+    image: taqeem/payment-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4008/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  notification-service:
+    <<: *service-defaults
+    image: taqeem/notification-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4009/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  social-service:
+    <<: *service-defaults
+    image: taqeem/social-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4010/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  content-service:
+    <<: *service-defaults
+    image: taqeem/content-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4011/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  moderation-service:
+    <<: *service-defaults
+    image: taqeem/moderation-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4012/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  feed-service:
+    <<: *service-defaults
+    image: taqeem/feed-service:${IMAGE_TAG:-latest}
+    env_file: .env.production
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4013/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  nginx:
+    <<: *service-defaults
+    image: nginx:1.25-alpine
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # We assume letsencrypt is configured on the host machine
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on: [gateway]
+
+networks:
+  taqeem_network:
+    external: true
