@@ -4,7 +4,7 @@ import { initPublisher } from "@taqeem/shared/events/publisher.js";
 import { startFeedConsumers } from "./events/consumer.js";
 import { connectRedis } from "./redis.js";
 
-const app = express();
+export const app = express();
 app.use(express.json({ limit: "200kb" }));
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
 
@@ -12,7 +12,7 @@ app.use("/api/feed", feedRoutes);
 
 const PORT = process.env.PORT || 4013;
 
-async function start() {
+export async function start() {
   await initPublisher();
   await connectRedis();
   await startFeedConsumers();
@@ -22,4 +22,6 @@ async function start() {
   });
 }
 
-start().catch(console.error);
+if (process.env.NODE_ENV !== "test") {
+  start().catch(console.error);
+}

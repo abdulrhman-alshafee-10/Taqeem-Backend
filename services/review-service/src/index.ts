@@ -9,7 +9,7 @@ import { initPublisher } from "./events/publisher.js";
 import { startReviewConsumer } from "./events/consumer.js";
 import { startAltTextConsumer } from "./workers/alt-text.consumer.js";
 
-const app = express();
+export const app = express();
 app.use(express.json({ limit: "1mb" }));
 
 // Serve the local uploads directory so images/videos can be fetched
@@ -28,7 +28,7 @@ app.get("/internal/businesses/:businessId/aggregates", getBusinessAggregates as 
 
 const PORT = process.env.PORT || 4003;
 
-async function start() {
+export async function start() {
   await connectMongo();
   await initPublisher();
   await startReviewConsumer();
@@ -36,4 +36,6 @@ async function start() {
   app.listen(PORT, () => console.log(`review-service on :${PORT}`));
 }
 
-start().catch(console.error);
+if (process.env.NODE_ENV !== "test") {
+  start().catch(console.error);
+}

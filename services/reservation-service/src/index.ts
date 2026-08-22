@@ -3,7 +3,7 @@ import reservationRoutes from "./routes/reservation.routes.js";
 import waitlistRoutes from "./routes/waitlist.routes.js";
 import { initPublisher } from "@taqeem/shared/events/publisher.js";
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
@@ -13,7 +13,7 @@ app.use("/api/waitlist", waitlistRoutes);
 
 const PORT = process.env.PORT || 4007;
 
-async function start() {
+export async function start() {
   await initPublisher();
   
   app.listen(PORT, () => {
@@ -21,4 +21,6 @@ async function start() {
   });
 }
 
-start().catch(console.error);
+if (process.env.NODE_ENV !== "test") {
+  start().catch(console.error);
+}

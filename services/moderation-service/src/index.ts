@@ -8,7 +8,7 @@ import { appealRoutes } from './routes/appeal.routes';
 import './workers/s3-export.worker';
 import './workers/sla-escalator';
 
-const app = express();
+export const app = express();
 
 app.use(cors());
 app.use(express.json());
@@ -20,6 +20,12 @@ app.use('/api/moderation/reviews', appealRoutes); // For appeals
 
 const port = process.env.PORT || 4012;
 
-app.listen(port, () => {
-  console.log(`Moderation Service running on port ${port}`);
-});
+export function start() {
+  app.listen(port, () => {
+    console.log(`Moderation Service running on port ${port}`);
+  });
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

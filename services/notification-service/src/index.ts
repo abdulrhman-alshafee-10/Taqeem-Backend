@@ -6,7 +6,7 @@ import { startConsumers } from "./consumers/index.js";
 import notificationsRoutes from "./routes/notifications.routes.js";
 import streamRoutes from "./routes/stream.routes.js";
 
-const app = express();
+export const app = express();
 app.use(express.json());
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
 
@@ -15,7 +15,7 @@ app.use("/api/notifications", streamRoutes);
 
 const PORT = process.env.PORT || 4008;
 
-async function start() {
+export async function start() {
   await connectRedis();
   await initPublisher();
   await startConsumers();
@@ -25,4 +25,6 @@ async function start() {
   });
 }
 
-start().catch(console.error);
+if (process.env.NODE_ENV !== "test") {
+  start().catch(console.error);
+}

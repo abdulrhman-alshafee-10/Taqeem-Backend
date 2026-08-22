@@ -18,9 +18,11 @@
     "test:load": "k6 run tests/load/smoke.js"
   },
   "devDependencies": {
-    "typescript": "^5.4.5",
+    "@pact-foundation/pact": "^17.1.2",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^20.0.0",
     "tsx": "^4.7.1",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.4.5"
   },
   "engines": {
     "node": ">=20.0.0",

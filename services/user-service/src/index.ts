@@ -8,7 +8,7 @@ import { startStreakUpdater } from "./workers/streak-updater.js";
 import { initPublisher } from "./events/publisher.js";
 import { startReputationConsumer } from "./workers/reputation.consumer.js";
 
-const app = express();
+export const app = express();
 app.use(express.json({ limit: "100kb" }));
 
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
@@ -24,9 +24,15 @@ app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
 });
 
 const PORT = process.env.PORT || 4001;
-initPublisher().then(async () => {
+
+export async function start() {
+  await initPublisher();
   await startReputationConsumer();
   await startBadgeAwarder();
   await startStreakUpdater();
   app.listen(PORT, () => console.log(`user-service on :${PORT}`));
-});
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start().catch(console.error);
+}

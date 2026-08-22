@@ -9,7 +9,7 @@ import journalsRoutes from "./routes/journals.routes.js";
 import { startContentConsumers } from "./events/consumer.js";
 import { startShortTranscoder } from "./workers/short-transcode.worker.js";
 
-const app = express();
+export const app = express();
 app.use(express.json({ limit: "200kb" }));
 app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
 
@@ -20,7 +20,7 @@ app.use("/api/journals", journalsRoutes);
 
 const PORT = process.env.PORT || 4011;
 
-async function start() {
+export async function start() {
   await connectMongo();
   await initPublisher();
   await connectRedis();
@@ -32,4 +32,6 @@ async function start() {
   });
 }
 
-start().catch(console.error);
+if (process.env.NODE_ENV !== "test") {
+  start().catch(console.error);
+}

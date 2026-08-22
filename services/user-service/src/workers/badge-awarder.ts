@@ -31,30 +31,31 @@ const EVENT_TO_KEYS: Record<string, string[]> = {
   "review.helpful_voted":  ["trusted_voter"],
 };
 
+export const badgeAwarderHandler = async (payload: any, headers: any) => {
+  const type = headers["x-event-type"] as string;
+  const keys = EVENT_TO_KEYS[type];
+  if (!keys) return;
+  
+  const userId = payload.userId ?? payload.authorId ?? payload.voterId;
+  if (!userId) return;
+
+  let stats = {};
+  try {
+    const res = await axios.get(`http://review-service:4003/api/internal/users/${userId}/counts`);
+    stats = res.data;
+  } catch (err) {
+    console.error("Failed to fetch user counts for badges", err);
+    return;
+  }
+
+  for (const key of keys) {
+    await tryAward(userId, key, stats);
+  }
+};
+
 export async function startBadgeAwarder() {
   await startConsumer({
     queue: "user.badges.queue",
-    handler: async (payload, headers) => {
-      const type = headers["x-event-type"] as string;
-      const keys = EVENT_TO_KEYS[type];
-      if (!keys) return;
-      
-      const userId = payload.userId ?? payload.authorId ?? payload.voterId;
-      if (!userId) return;
-
-      // Fetch stats from review-service
-      let stats = {};
-      try {
-        const res = await axios.get(`http://review-service:4003/api/internal/users/${userId}/counts`);
-        stats = res.data;
-      } catch (err) {
-        console.error("Failed to fetch user counts for badges", err);
-        return;
-      }
-
-      for (const key of keys) {
-        await tryAward(userId, key, stats);
-      }
-    },
+    handler: badgeAwarderHandler,
   });
 }

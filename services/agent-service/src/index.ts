@@ -7,7 +7,7 @@ import { startMediaTagger } from "./workers/media-tagger.js";
 
 import internalRoutes from "./routes/internal.routes.js";
 
-const app = express();
+export const app = express();
 app.use(express.json({ limit: "200kb" }));
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api/agent", agentRoutes);
@@ -21,7 +21,7 @@ import { startFraudDetector } from "./workers/fraud-detector.js";
 
 const PORT = Number(process.env.PORT || 4006);
 
-async function startWorkers() {
+export async function startWorkers() {
   await initPublisher();
   await startMediaTagger();
   await startAspectScorer();
@@ -30,7 +30,6 @@ async function startWorkers() {
   await startRagIndexer();
   await startFraudDetector();
 
-  // Idempotent — checks RediSearch index existence before rebuilding
   if (process.env.INDEX_HELP_DOCS_ON_START === "true") {
     await buildHelpIndex(path.join(process.cwd(), "knowledge"));
   }
@@ -38,4 +37,6 @@ async function startWorkers() {
   app.listen(PORT, () => console.log(`agent-service on :${PORT}`));
 }
 
-startWorkers().catch(console.error);
+if (process.env.NODE_ENV !== "test") {
+  startWorkers().catch(console.error);
+}
