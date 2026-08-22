@@ -23,13 +23,30 @@ const QuerySchema = z.object({
   sort:       z.string().default("relevance"),
   page:       z.coerce.number().int().min(1).default(1),
   size:       z.coerce.number().int().min(1).max(50).default(20),
+  personalize: z.string().optional().transform(v => v === "true"),
 });
 
 export async function search(req: Request, res: Response) {
   const parsed = QuerySchema.safeParse(req.query);
   if (!parsed.success) return res.status(400).json({ error: "Bad query", issues: parsed.error.issues });
 
-  const params = parsed.data;
+  const params = parsed.data as any;
+  const userId = (req as any).user?.id;
+
+  if (params.personalize && userId) {
+    try {
+      // Fetch preferences from user-service (In reality, could use internal API or Redis cache)
+      const fetchReq = await fetch(`http://user-service:4001/api/users/me/preferences`, {
+        headers: { Authorization: req.headers.authorization || "" }
+      });
+      if (fetchReq.ok) {
+        params.preferences = await fetchReq.json();
+      }
+    } catch (e) {
+      console.warn("Could not fetch user preferences for personalization", e);
+    }
+  }
+
   const body = buildSearchQuery(params);
 
   try {

@@ -29,13 +29,33 @@ model User {
   helpfulReceived Int      @default(0) @map("helpful_received")
   badges          String[] @default([])
 
+  trackRecentlyViewed Boolean @default(true) @map("track_recently_viewed")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   refreshTokens RefreshToken[]
+  preferences   UserPreference?
 
   @@index([email])
   @@map("users")
+}
+
+model UserPreference {
+  userId              String   @id @db.Uuid @map("user_id")
+  favoriteCategories  String[] @default([])
+  dislikedCategories  String[] @default([])
+  dietary             String[] @default([])
+  atmospherePrefs     String[] @default([])
+  featurePrefs        String[] @default([])
+  priceTierPrefs      String[] @default([])
+  citiesOfInterest    String[] @default([])
+  cuisinePrefsFreeText String? @map("cuisine_prefs_free_text")
+  accessibilityNeeds  String[] @default([])
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
 }
 
 model RefreshToken {

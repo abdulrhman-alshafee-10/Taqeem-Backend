@@ -4,6 +4,7 @@
   "workspaces": [
     "gateway",
     "services/*",
+    "services/feed-service",
     "shared",
     "tools/*"
   ],

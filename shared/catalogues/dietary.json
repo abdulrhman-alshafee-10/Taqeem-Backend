@@ -1,0 +1,10 @@
+[
+  { "id": "halal", "label": "Halal", "strict": true },
+  { "id": "vegan", "label": "Vegan", "strict": true },
+  { "id": "vegetarian", "label": "Vegetarian", "strict": true },
+  { "id": "pescatarian", "label": "Pescatarian", "strict": true },
+  { "id": "gluten_free", "label": "Gluten-Free", "strict": true },
+  { "id": "dairy_free", "label": "Dairy-Free", "strict": true },
+  { "id": "nut_allergy", "label": "Nut Allergy", "strict": true },
+  { "id": "keto", "label": "Keto-friendly", "strict": false }
+]

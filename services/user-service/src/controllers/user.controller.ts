@@ -75,3 +75,26 @@ export async function updateMe(req: Request, res: Response) {
   });
   res.json(updated);
 }
+
+export async function updatePrivacy(req: Request, res: Response) {
+  const ctx = getUserContext(req);
+  if (!ctx.isAuthenticated) return res.status(401).json({ error: "Unauthenticated" });
+
+  const { trackRecentlyViewed } = req.body;
+  
+  const updated = await prisma.user.update({
+    where: { id: ctx.id as string },
+    data: { trackRecentlyViewed },
+    select: { id: true, trackRecentlyViewed: true, updatedAt: true },
+  });
+  
+  // Optionally publish event user.privacy_updated if needed by consumer (Phase 15 requires Feed Service to check flag before writing to Redis)
+  await publishEvent("user.privacy_updated", {
+    userId: ctx.id,
+    trackRecentlyViewed: updated.trackRecentlyViewed,
+    updatedAt: updated.updatedAt
+  });
+
+  res.json(updated);
+}
+

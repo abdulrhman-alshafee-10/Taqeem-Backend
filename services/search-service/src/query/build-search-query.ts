@@ -16,6 +16,9 @@ export function buildSearchQuery(params: any) {
   if (city)              filter.push({ term:  { city } });
   if (typeof minRating === "number") filter.push({ range: { avgRating: { gte: minRating } } });
 
+  if (params.preferences?.dietary?.includes("halal")) filter.push({ term: { dietary: "halal" } });
+  if (params.preferences?.dietary?.includes("vegan")) filter.push({ term: { dietary: "vegan" } });
+
   if (params.features?.length) {
     filter.push({
       terms_set: {
@@ -86,6 +89,16 @@ export function buildSearchQuery(params: any) {
       functions: [
         { field_value_factor: { field: "avgRating",   factor: 1.2, missing: 0, modifier: "sqrt" } },
         { field_value_factor: { field: "reviewCount", factor: 0.05, missing: 0, modifier: "log1p" } },
+        // Preference boosts
+        ...(params.preferences?.favoriteCategories?.length ? [
+          { filter: { terms: { categories: params.preferences.favoriteCategories } }, weight: 1.3 }
+        ] : []),
+        ...(params.preferences?.dislikedCategories?.length ? [
+          { filter: { terms: { categories: params.preferences.dislikedCategories } }, weight: 0.5 }
+        ] : []),
+        ...(params.preferences?.featurePrefs?.length ? [
+          { filter: { terms: { features: params.preferences.featurePrefs } }, weight: 1.3 }
+        ] : [])
       ],
       score_mode: "sum",
       boost_mode: "sum",

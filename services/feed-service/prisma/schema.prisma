@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FeedItemKind {
+  REVIEW
+  TIP
+  CHECKIN
+  SHORT
+  OWNER_POST
+  BUSINESS_HIGHLIGHT
+  COLLECTION
+  MEETUP
+}
+
+model FeedItem {
+  id            String       @id @default(uuid()) @db.Uuid
+  kind          FeedItemKind
+  refId         String       @db.Uuid
+  businessId    String?      @db.Uuid
+  authorId      String?      @db.Uuid
+  city          String?
+  categories    String[]     @default([])
+  score         Float
+  createdAt     DateTime     @default(now())
+  expiresAt     DateTime
+
+  @@index([expiresAt])
+  @@index([city, createdAt])
+  @@index([kind, createdAt])
+}

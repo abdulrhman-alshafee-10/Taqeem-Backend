@@ -15,9 +15,13 @@ graph TD
         Gateway --> BizSvc[Business Service :4002]
         Gateway --> RevSvc[Review Service :4003]
         Gateway --> SearchSvc[Search Service :4004]
-        Gateway --> SocialSvc[Social Service :4010]
+        Gateway --> NotifSvc[Notification Service :4005]
         Gateway --> AgentSvc[AI Agent Service :4006]
         Gateway --> ResSvc[Reservation Service :4007]
+        Gateway --> PaySvc[Payment Service :4008]
+        Gateway --> SocialSvc[Social Service :4010]
+        Gateway --> ModSvc[Moderation Service :4012]
+        Gateway --> FeedSvc[Feed Service :4013]
     end
 
     subgraph Message Broker

@@ -14,14 +14,19 @@ app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }
 app.use("/api/lists", listRoutes);
 app.use("/api/social", followRoutes);
 app.use("/api/social", recRoutes);
+import systemListsRoutes from "./routes/system-lists.routes.js";
+app.use("/api/social", systemListsRoutes);
 app.use("/api/social", guideRoutes);
 app.use("/api/meetups", meetupRoutes);
 
 const PORT = process.env.PORT || 4010;
 
+import { startSocialConsumers } from "./events/consumer.js";
+
 async function start() {
   await initPublisher();
   await connectRedis();
+  await startSocialConsumers();
   app.listen(PORT, () => {
     console.log(`social-service listening on port ${PORT}`);
   });

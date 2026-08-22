@@ -50,7 +50,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:7-alpine
+    image: redis/redis-stack-server:latest
     container_name: taqeem_redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
@@ -367,3 +367,25 @@ services:
       - rabbitmq
       - redis
     networks: [taqeem_network]
+
+  feed-service:
+    build:
+      context: .
+      dockerfile: services/feed-service/Dockerfile
+    container_name: taqeem_feed_service
+    restart: unless-stopped
+    ports:
+      - "4013:4013"
+    env_file:
+      - services/feed-service/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - taqeem_network
