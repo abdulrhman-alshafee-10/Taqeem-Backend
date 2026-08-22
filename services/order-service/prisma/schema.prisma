@@ -20,24 +20,24 @@ enum OrderStatus {
 }
 
 model Order {
-  id           String       @id @default(uuid()) @db.Uuid
-  userId       String       @map("user_id") @db.Uuid
-  businessId   String       @map("business_id") @db.Uuid
-  currency     String       @default("EGP")
-  subtotal     Decimal      @db.Decimal(10,2)
-  serviceFee   Decimal      @default(0) @db.Decimal(10,2) @map("service_fee")
-  tax          Decimal      @default(0) @db.Decimal(10,2)
-  tipAmount    Decimal      @default(0) @db.Decimal(10,2) @map("tip_amount")
-  total        Decimal      @db.Decimal(10,2)
-  status       OrderStatus  @default(DRAFT)
-  paymentId    String?      @map("payment_id") @db.Uuid
-  couponId     String?      @map("coupon_id") @db.Uuid
-  couponAmount Decimal      @default(0) @db.Decimal(10,2) @map("coupon_amount")
-  pickupAt     DateTime?    @map("pickup_at")
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @map("user_id") @db.Uuid
+  businessId   String      @map("business_id") @db.Uuid
+  currency     String      @default("EGP")
+  subtotal     Decimal     @db.Decimal(10, 2)
+  serviceFee   Decimal     @default(0) @map("service_fee") @db.Decimal(10, 2)
+  tax          Decimal     @default(0) @db.Decimal(10, 2)
+  tipAmount    Decimal     @default(0) @map("tip_amount") @db.Decimal(10, 2)
+  total        Decimal     @db.Decimal(10, 2)
+  status       OrderStatus @default(DRAFT)
+  paymentId    String?     @map("payment_id") @db.Uuid
+  couponId     String?     @map("coupon_id") @db.Uuid
+  couponAmount Decimal     @default(0) @map("coupon_amount") @db.Decimal(10, 2)
+  pickupAt     DateTime?   @map("pickup_at")
   notes        String?
   items        OrderItem[]
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
 
   @@index([userId, createdAt])
   @@index([businessId, status])
@@ -50,11 +50,22 @@ model OrderItem {
   menuItemId String  @map("menu_item_id") @db.Uuid
   variantId  String? @map("variant_id")
   name       String
-  unitPrice  Decimal @db.Decimal(10,2) @map("unit_price")
+  unitPrice  Decimal @map("unit_price") @db.Decimal(10, 2)
   quantity   Int
   notes      String?
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
+}
+
+model OutboxEvent {
+  id          String    @id @default(uuid())
+  routingKey  String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  attempts    Int       @default(0)
+
+  @@index([publishedAt, createdAt])
 }

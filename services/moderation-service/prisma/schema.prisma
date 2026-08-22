@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -58,37 +59,37 @@ enum ReportReason {
 }
 
 model Report {
-  id           String        @id @default(uuid()) @db.Uuid
-  reporterId   String        @map("reporter_id") @db.Uuid
-  contentKind  ContentKind
-  contentId    String        @map("content_id") @db.Uuid
-  reason       ReportReason
-  detail       String?
-  createdAt    DateTime      @default(now())
+  id          String       @id @default(uuid()) @db.Uuid
+  reporterId  String       @map("reporter_id") @db.Uuid
+  contentKind ContentKind
+  contentId   String       @map("content_id") @db.Uuid
+  reason      ReportReason
+  detail      String?
+  createdAt   DateTime     @default(now())
 
-  queueEntryId String?       @map("queue_entry_id") @db.Uuid
-  queueEntry   QueueEntry?   @relation(fields: [queueEntryId], references: [id])
+  queueEntryId String?     @map("queue_entry_id") @db.Uuid
+  queueEntry   QueueEntry? @relation(fields: [queueEntryId], references: [id])
 
   @@index([contentKind, contentId])
   @@index([reporterId])
 }
 
 model QueueEntry {
-  id            String       @id @default(uuid()) @db.Uuid
+  id            String      @id @default(uuid()) @db.Uuid
   contentKind   ContentKind
-  contentId     String       @map("content_id") @db.Uuid
-  authorId      String?      @map("author_id") @db.Uuid
-  aiScore       Float?       @map("ai_score")
-  aiSignals     Json?        @map("ai_signals")
-  reportCount   Int          @default(0)
-  status        QueueStatus  @default(PENDING)
-  assignedModId String?      @map("assigned_mod_id") @db.Uuid
-  priority      Int          @default(0)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  contentId     String      @map("content_id") @db.Uuid
+  authorId      String?     @map("author_id") @db.Uuid
+  aiScore       Float?      @map("ai_score")
+  aiSignals     Json?       @map("ai_signals")
+  reportCount   Int         @default(0)
+  status        QueueStatus @default(PENDING)
+  assignedModId String?     @map("assigned_mod_id") @db.Uuid
+  priority      Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  reports       Report[]
-  actions       ModAction[]
+  reports Report[]
+  actions ModAction[]
 
   @@unique([contentKind, contentId])
   @@index([status, priority, createdAt])
@@ -96,25 +97,25 @@ model QueueEntry {
 }
 
 model ModAction {
-  id           String          @id @default(uuid()) @db.Uuid
-  queueEntryId String          @map("queue_entry_id") @db.Uuid
-  moderatorId  String          @map("moderator_id") @db.Uuid
+  id           String         @id @default(uuid()) @db.Uuid
+  queueEntryId String         @map("queue_entry_id") @db.Uuid
+  moderatorId  String         @map("moderator_id") @db.Uuid
   action       DecisionAction
   note         String?
-  createdAt    DateTime        @default(now())
+  createdAt    DateTime       @default(now())
 
-  queueEntry   QueueEntry @relation(fields: [queueEntryId], references: [id])
+  queueEntry QueueEntry @relation(fields: [queueEntryId], references: [id])
 
   @@index([moderatorId, createdAt])
 }
 
 model UserPenalty {
-  id         String    @id @default(uuid()) @db.Uuid
-  userId     String    @map("user_id") @db.Uuid
-  action     String    // WARN | MUTE | BAN
-  reason     String?
-  expiresAt  DateTime?
-  createdAt  DateTime  @default(now())
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  action    String // WARN | MUTE | BAN
+  reason    String?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
 
   @@index([userId, expiresAt])
 }
@@ -145,18 +146,29 @@ model BusinessMergeRequest {
 }
 
 model ReviewAppeal {
-  id            String    @id @default(uuid()) @db.Uuid
-  reviewId      String    @map("review_id") @db.Uuid
-  businessId    String    @map("business_id") @db.Uuid
-  ownerId       String    @map("owner_id") @db.Uuid
-  reason        String    // FAKE | PERSONAL_ATTACK | FALSE_CLAIM | OFF_TOPIC | OTHER
-  detail        String    @db.Text
-  evidenceUrls  String[]  @default([])
-  status        String    @default("PENDING") // PENDING | ACCEPTED | REJECTED
-  decidedById   String?   @map("decided_by_id") @db.Uuid
-  decidedAt     DateTime?
-  createdAt     DateTime  @default(now())
+  id           String    @id @default(uuid()) @db.Uuid
+  reviewId     String    @map("review_id") @db.Uuid
+  businessId   String    @map("business_id") @db.Uuid
+  ownerId      String    @map("owner_id") @db.Uuid
+  reason       String // FAKE | PERSONAL_ATTACK | FALSE_CLAIM | OFF_TOPIC | OTHER
+  detail       String    @db.Text
+  evidenceUrls String[]  @default([])
+  status       String    @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  decidedById  String?   @map("decided_by_id") @db.Uuid
+  decidedAt    DateTime?
+  createdAt    DateTime  @default(now())
 
   @@unique([reviewId, ownerId])
   @@index([status, createdAt])
+}
+
+model OutboxEvent {
+  id          String    @id @default(uuid())
+  routingKey  String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  attempts    Int       @default(0)
+
+  @@index([publishedAt, createdAt])
 }

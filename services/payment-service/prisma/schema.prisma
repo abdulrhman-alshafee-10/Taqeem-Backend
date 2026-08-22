@@ -39,7 +39,7 @@ model Payment {
   purpose        PaymentPurpose
   entity         String
   entityId       String          @map("entity_id") @db.Uuid
-  amount         Decimal         @db.Decimal(12,2)
+  amount         Decimal         @db.Decimal(12, 2)
   currency       String          @default("EGP")
   provider       PaymentProvider
   providerRef    String?         @unique @map("provider_ref")
@@ -59,13 +59,13 @@ model Payment {
 }
 
 model Refund {
-  id           String   @id @default(uuid()) @db.Uuid
-  paymentId    String   @map("payment_id") @db.Uuid
-  amount       Decimal  @db.Decimal(12,2)
-  reason       String?
-  providerRef  String?  @unique @map("provider_ref")
-  status       String   @default("PENDING")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid()) @db.Uuid
+  paymentId   String   @map("payment_id") @db.Uuid
+  amount      Decimal  @db.Decimal(12, 2)
+  reason      String?
+  providerRef String?  @unique @map("provider_ref")
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   payment Payment @relation(fields: [paymentId], references: [id])
 
@@ -77,7 +77,7 @@ model LedgerEntry {
   paymentId String?  @map("payment_id") @db.Uuid
   account   String
   side      String
-  amount    Decimal  @db.Decimal(12,2)
+  amount    Decimal  @db.Decimal(12, 2)
   currency  String
   memo      String?
   createdAt DateTime @default(now()) @map("created_at")
@@ -97,25 +97,25 @@ enum SubscriptionTier {
 }
 
 model Subscription {
-  id                 String   @id @default(uuid()) @db.Uuid
-  userId             String   @map("user_id") @db.Uuid
-  businessId         String?  @map("business_id") @db.Uuid
-  tier               SubscriptionTier @default(FREE)
-  plan               String
-  billingInterval    String   @default("month")
-  status             String
-  stripeCustomerId   String?  @map("stripe_customer_id")
-  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
-  currentPeriodEnd   DateTime? @map("current_period_end")
-  trialEndsAt        DateTime? @map("trial_ends_at")
-  cancelAt           DateTime? @map("cancel_at")
-  cancelReason       String?   @map("cancel_reason")
-  gracePeriodEndsAt  DateTime? @map("grace_period_ends_at")
-  seats              Int       @default(1)
-  seatsUsed          Int       @default(0) @map("seats_used")
-  groupId            String?   @map("group_id") @db.Uuid
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  id                   String           @id @default(uuid()) @db.Uuid
+  userId               String           @map("user_id") @db.Uuid
+  businessId           String?          @map("business_id") @db.Uuid
+  tier                 SubscriptionTier @default(FREE)
+  plan                 String
+  billingInterval      String           @default("month")
+  status               String
+  stripeCustomerId     String?          @map("stripe_customer_id")
+  stripeSubscriptionId String?          @unique @map("stripe_subscription_id")
+  currentPeriodEnd     DateTime?        @map("current_period_end")
+  trialEndsAt          DateTime?        @map("trial_ends_at")
+  cancelAt             DateTime?        @map("cancel_at")
+  cancelReason         String?          @map("cancel_reason")
+  gracePeriodEndsAt    DateTime?        @map("grace_period_ends_at")
+  seats                Int              @default(1)
+  seatsUsed            Int              @default(0) @map("seats_used")
+  groupId              String?          @map("group_id") @db.Uuid
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
 
   @@index([userId])
   @@index([businessId])
@@ -140,22 +140,22 @@ enum GiftCardStatus {
 }
 
 model GiftCard {
-  id             String          @id @default(uuid()) @db.Uuid
-  code           String?         @unique
-  codeHash       String          @unique @map("code_hash")
-  buyerUserId    String?         @map("buyer_user_id") @db.Uuid
-  recipientEmail String?         @map("recipient_email")
-  message        String?
-  amountInitial  Decimal         @db.Decimal(12,2) @map("amount_initial")
-  amountRemaining Decimal        @db.Decimal(12,2) @map("amount_remaining")
-  currency       String          @default("EGP")
-  status         GiftCardStatus  @default(ACTIVE)
-  purchasePaymentId String?      @map("purchase_payment_id") @db.Uuid
-  businessScoped String?         @map("business_scoped") @db.Uuid
-  expiresAt      DateTime?       @map("expires_at")
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
-  metadata       Json            @default("{}")
+  id                String         @id @default(uuid()) @db.Uuid
+  code              String?        @unique
+  codeHash          String         @unique @map("code_hash")
+  buyerUserId       String?        @map("buyer_user_id") @db.Uuid
+  recipientEmail    String?        @map("recipient_email")
+  message           String?
+  amountInitial     Decimal        @map("amount_initial") @db.Decimal(12, 2)
+  amountRemaining   Decimal        @map("amount_remaining") @db.Decimal(12, 2)
+  currency          String         @default("EGP")
+  status            GiftCardStatus @default(ACTIVE)
+  purchasePaymentId String?        @map("purchase_payment_id") @db.Uuid
+  businessScoped    String?        @map("business_scoped") @db.Uuid
+  expiresAt         DateTime?      @map("expires_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  metadata          Json           @default("{}")
 
   redemptions GiftCardRedemption[]
 
@@ -164,13 +164,13 @@ model GiftCard {
 }
 
 model GiftCardRedemption {
-  id          String   @id @default(uuid()) @db.Uuid
-  giftCardId  String   @map("gift_card_id") @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  orderId     String?  @map("order_id") @db.Uuid
-  reservationId String? @map("reservation_id") @db.Uuid
-  amount      Decimal  @db.Decimal(12,2)
-  redeemedAt  DateTime @default(now()) @map("redeemed_at")
+  id            String   @id @default(uuid()) @db.Uuid
+  giftCardId    String   @map("gift_card_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  orderId       String?  @map("order_id") @db.Uuid
+  reservationId String?  @map("reservation_id") @db.Uuid
+  amount        Decimal  @db.Decimal(12, 2)
+  redeemedAt    DateTime @default(now()) @map("redeemed_at")
 
   giftCard GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
 
@@ -180,48 +180,48 @@ model GiftCardRedemption {
 }
 
 // Phase 22: Ads
-enum AdKind { 
-  PROMOTED_SEARCH 
-  SPONSORED_POST 
+enum AdKind {
+  PROMOTED_SEARCH
+  SPONSORED_POST
 }
 
-enum AdStatus { 
-  DRAFT 
-  PENDING_REVIEW 
-  APPROVED 
-  PAUSED 
-  SPENT_OUT 
-  ENDED 
-  REJECTED 
+enum AdStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  PAUSED
+  SPENT_OUT
+  ENDED
+  REJECTED
 }
 
 model AdCampaign {
-  id            String     @id @default(uuid()) @db.Uuid
-  ownerId       String     @map("owner_id") @db.Uuid
-  businessId    String     @map("business_id") @db.Uuid
-  kind          AdKind
-  refId         String?    @map("ref_id") @db.Uuid
-  status        AdStatus   @default(DRAFT)
+  id         String   @id @default(uuid()) @db.Uuid
+  ownerId    String   @map("owner_id") @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  kind       AdKind
+  refId      String?  @map("ref_id") @db.Uuid
+  status     AdStatus @default(DRAFT)
 
-  cities        String[]   @default([])
-  verticals     String[]   @default([])
-  categories    String[]   @default([])
-  queryKeywords String[]   @default([])
+  cities        String[] @default([])
+  verticals     String[] @default([])
+  categories    String[] @default([])
+  queryKeywords String[] @default([])
   bboxes        Json?
 
-  currency      String     @default("USD")
-  cpcBidCents   Int?       @map("cpc_bid_cents")
-  cpmBidCents   Int?       @map("cpm_bid_cents")
-  dailyBudgetCents Int     @map("daily_budget_cents")
-  totalBudgetCents Int?    @map("total_budget_cents")
-  spendCents    Int        @default(0)
+  currency         String @default("USD")
+  cpcBidCents      Int?   @map("cpc_bid_cents")
+  cpmBidCents      Int?   @map("cpm_bid_cents")
+  dailyBudgetCents Int    @map("daily_budget_cents")
+  totalBudgetCents Int?   @map("total_budget_cents")
+  spendCents       Int    @default(0)
 
-  startAt       DateTime   @default(now()) @map("start_at")
-  endAt         DateTime?  @map("end_at")
-  paceType      String     @default("EVEN") @map("pace_type")
+  startAt  DateTime  @default(now()) @map("start_at")
+  endAt    DateTime? @map("end_at")
+  paceType String    @default("EVEN") @map("pace_type")
 
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([status, kind])
   @@index([businessId])
@@ -247,27 +247,27 @@ model AdImpression {
 }
 
 // Phase 22: Fee Configs
-enum FeeScope { 
-  PLATFORM 
-  VERTICAL 
-  BUSINESS 
+enum FeeScope {
+  PLATFORM
+  VERTICAL
+  BUSINESS
 }
 
 model FeeConfig {
-  id               String   @id @default(uuid()) @db.Uuid
-  scope            FeeScope
-  scopeKey         String   @map("scope_key")
-  transactionFeePct Decimal @db.Decimal(5,3) @default(3.000) @map("transaction_fee_pct")
-  bookingFeePerCoverCents Int? @map("booking_fee_per_cover_cents")
-  useBookingFee    Boolean  @default(false) @map("use_booking_fee")
-  waiveUntil       DateTime? @map("waive_until")
-  minFeeCents      Int      @default(0) @map("min_fee_cents")
-  maxFeeCents      Int?     @map("max_fee_cents")
-  currency         String   @default("USD")
-  reason           String?
-  updatedById      String?  @map("updated_by_id") @db.Uuid
-  updatedAt        DateTime @updatedAt @map("updated_at")
-  createdAt        DateTime @default(now()) @map("created_at")
+  id                      String    @id @default(uuid()) @db.Uuid
+  scope                   FeeScope
+  scopeKey                String    @map("scope_key")
+  transactionFeePct       Decimal   @default(3.000) @map("transaction_fee_pct") @db.Decimal(5, 3)
+  bookingFeePerCoverCents Int?      @map("booking_fee_per_cover_cents")
+  useBookingFee           Boolean   @default(false) @map("use_booking_fee")
+  waiveUntil              DateTime? @map("waive_until")
+  minFeeCents             Int       @default(0) @map("min_fee_cents")
+  maxFeeCents             Int?      @map("max_fee_cents")
+  currency                String    @default("USD")
+  reason                  String?
+  updatedById             String?   @map("updated_by_id") @db.Uuid
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+  createdAt               DateTime  @default(now()) @map("created_at")
 
   @@unique([scope, scopeKey])
   @@map("fee_configs")
@@ -275,14 +275,14 @@ model FeeConfig {
 
 // Phase 22: Affiliates
 model AffiliateReferral {
-  id           String   @id @default(uuid()) @db.Uuid
-  partner      String
-  userId       String?  @map("user_id") @db.Uuid
-  businessId   String   @map("business_id") @db.Uuid
-  clickedAt    DateTime @default(now()) @map("clicked_at")
-  expiresAt    DateTime @map("expires_at")
-  externalRef  String?  @map("external_ref")
-  metadata     Json?
+  id          String   @id @default(uuid()) @db.Uuid
+  partner     String
+  userId      String?  @map("user_id") @db.Uuid
+  businessId  String   @map("business_id") @db.Uuid
+  clickedAt   DateTime @default(now()) @map("clicked_at")
+  expiresAt   DateTime @map("expires_at")
+  externalRef String?  @map("external_ref")
+  metadata    Json?
 
   @@index([partner, userId])
   @@index([partner, businessId, clickedAt])
@@ -290,14 +290,14 @@ model AffiliateReferral {
 }
 
 model AffiliatePayout {
-  id           String   @id @default(uuid()) @db.Uuid
-  partner      String
-  referralId   String?  @map("referral_id") @db.Uuid
-  amountCents  Int      @map("amount_cents")
-  currency     String
-  status       String   @default("PENDING")
-  externalRef  String?  @map("external_ref")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid()) @db.Uuid
+  partner     String
+  referralId  String?  @map("referral_id") @db.Uuid
+  amountCents Int      @map("amount_cents")
+  currency    String
+  status      String   @default("PENDING")
+  externalRef String?  @map("external_ref")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   @@index([partner, status, createdAt])
   @@map("affiliate_payouts")
@@ -310,10 +310,21 @@ model AwardSponsorship {
   vertical   String
   sponsor    String
   logoUrl    String   @map("logo_url")
-  amountUsd  Decimal  @db.Decimal(12,2) @map("amount_usd")
+  amountUsd  Decimal  @map("amount_usd") @db.Decimal(12, 2)
   approvedBy String   @map("approved_by")
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@unique([year, city, vertical])
   @@map("award_sponsorships")
+}
+
+model OutboxEvent {
+  id          String    @id @default(uuid())
+  routingKey  String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  attempts    Int       @default(0)
+
+  @@index([publishedAt, createdAt])
 }

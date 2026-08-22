@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -7,30 +8,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum AlertKind { 
-  NEW_BUSINESS_IN_RADIUS 
-  PRICE_DROP 
-  SLOT_OPENED 
-  REVIEW_ADDED 
-  LIST_ITEM_ADDED 
+enum AlertKind {
+  NEW_BUSINESS_IN_RADIUS
+  PRICE_DROP
+  SLOT_OPENED
+  REVIEW_ADDED
+  LIST_ITEM_ADDED
 }
-enum AlertStatus { 
-  ACTIVE 
-  PAUSED 
-  EXPIRED 
+
+enum AlertStatus {
+  ACTIVE
+  PAUSED
+  EXPIRED
 }
 
 model AlertRule {
-  id         String       @id @default(uuid()) @db.Uuid
-  userId     String       @map("user_id") @db.Uuid
+  id         String      @id @default(uuid()) @db.Uuid
+  userId     String      @map("user_id") @db.Uuid
   kind       AlertKind
-  status     AlertStatus  @default(ACTIVE)
+  status     AlertStatus @default(ACTIVE)
   params     Json
   quietHours Json?
   expiresAt  DateTime?
-  geoHash5   String?      // Optional: for NEW_BUSINESS_IN_RADIUS geohash optimization
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  geoHash5   String? // Optional: for NEW_BUSINESS_IN_RADIUS geohash optimization
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   @@index([userId, status])
   @@index([kind, status])
@@ -52,55 +54,66 @@ enum NotifStatus {
 }
 
 model Notification {
-  id          String        @id @default(uuid()) @db.Uuid
-  userId      String        @map("user_id") @db.Uuid
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
   type        String
   channel     NotifChannel
-  status      NotifStatus   @default(QUEUED)
+  status      NotifStatus  @default(QUEUED)
   subject     String?
   body        String
-  data        Json          @default("{}")
-  providerRef String?       @map("provider_ref")
+  data        Json         @default("{}")
+  providerRef String?      @map("provider_ref")
   error       String?
   sentAt      DateTime?
   deliveredAt DateTime?
   openedAt    DateTime?
   clickedAt   DateTime?
-  createdAt   DateTime      @default(now())
+  createdAt   DateTime     @default(now())
 
   @@index([userId, createdAt])
   @@index([type, createdAt])
 }
 
 model PushToken {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @map("user_id") @db.Uuid
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
   platform   String
-  token      String   @unique
-  createdAt  DateTime @default(now())
+  token      String    @unique
+  createdAt  DateTime  @default(now())
   lastUsedAt DateTime?
 
   @@index([userId])
 }
 
 model NotifPreference {
-  userId    String       @map("user_id") @db.Uuid
-  type      String
-  channel   NotifChannel
-  enabled   Boolean      @default(true)
+  userId  String       @map("user_id") @db.Uuid
+  type    String
+  channel NotifChannel
+  enabled Boolean      @default(true)
 
   @@id([userId, type, channel])
 }
 
 model InAppInbox {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
   type      String
   title     String
   body      String
   deepLink  String?
   seenAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([userId, createdAt])
+}
+
+model OutboxEvent {
+  id          String    @id @default(uuid())
+  routingKey  String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  attempts    Int       @default(0)
+
+  @@index([publishedAt, createdAt])
 }

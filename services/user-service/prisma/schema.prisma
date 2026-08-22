@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -14,26 +15,26 @@ enum Role {
 }
 
 model User {
-  id            String   @id @default(uuid()) @db.Uuid
-  email         String   @unique
-  passwordHash  String   @map("password_hash")
-  name          String
-  role          Role     @default(USER)
-  avatarUrl     String?  @map("avatar_url")
-  bio           String?
-  isVerified    Boolean  @default(false) @map("is_verified")
-  locale        String   @default("ar-EG")  
-  reputationScore Int      @default(0) @map("reputation_score")
-  reputationLevel String   @default("EXPLORER") @map("reputation_level")
-  reviewsCount    Int      @default(0) @map("reviews_count")
-  helpfulReceived Int      @default(0) @map("helpful_received")
-  
-  userBadges    UserBadge[]
-  streaks       Streak[]
+  id              String  @id @default(uuid()) @db.Uuid
+  email           String  @unique
+  passwordHash    String  @map("password_hash")
+  name            String
+  role            Role    @default(USER)
+  avatarUrl       String? @map("avatar_url")
+  bio             String?
+  isVerified      Boolean @default(false) @map("is_verified")
+  locale          String  @default("ar-EG")
+  reputationScore Int     @default(0) @map("reputation_score")
+  reputationLevel String  @default("EXPLORER") @map("reputation_level")
+  reviewsCount    Int     @default(0) @map("reviews_count")
+  helpfulReceived Int     @default(0) @map("helpful_received")
 
-  trackRecentlyViewed Boolean @default(true) @map("track_recently_viewed")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  userBadges UserBadge[]
+  streaks    Streak[]
+
+  trackRecentlyViewed Boolean  @default(true) @map("track_recently_viewed")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   refreshTokens RefreshToken[]
   preferences   UserPreference?
@@ -43,17 +44,17 @@ model User {
 }
 
 model UserPreference {
-  userId              String   @id @db.Uuid @map("user_id")
-  favoriteCategories  String[] @default([])
-  dislikedCategories  String[] @default([])
-  dietary             String[] @default([])
-  atmospherePrefs     String[] @default([])
-  featurePrefs        String[] @default([])
-  priceTierPrefs      String[] @default([])
-  citiesOfInterest    String[] @default([])
-  cuisinePrefsFreeText String? @map("cuisine_prefs_free_text")
-  accessibilityNeeds  String[] @default([])
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  userId               String   @id @map("user_id") @db.Uuid
+  favoriteCategories   String[] @default([])
+  dislikedCategories   String[] @default([])
+  dietary              String[] @default([])
+  atmospherePrefs      String[] @default([])
+  featurePrefs         String[] @default([])
+  priceTierPrefs       String[] @default([])
+  citiesOfInterest     String[] @default([])
+  cuisinePrefsFreeText String?  @map("cuisine_prefs_free_text")
+  accessibilityNeeds   String[] @default([])
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -61,12 +62,12 @@ model UserPreference {
 }
 
 model RefreshToken {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @map("user_id") @db.Uuid
-  tokenHash  String   @unique @map("token_hash")
-  expiresAt  DateTime @map("expires_at")
-  revokedAt  DateTime? @map("revoked_at")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -75,17 +76,17 @@ model RefreshToken {
 }
 
 model Badge {
-  key         String   @id
-  labelEn     String
-  labelAr     String
-  descEn      String
-  descAr      String
-  iconUrl     String
-  category    String   // reviewer | explorer | social | owner
-  points      Int      @default(0)
-  isRetired   Boolean  @default(false)
+  key       String  @id
+  labelEn   String
+  labelAr   String
+  descEn    String
+  descAr    String
+  iconUrl   String
+  category  String // reviewer | explorer | social | owner
+  points    Int     @default(0)
+  isRetired Boolean @default(false)
 
-  userBadges  UserBadge[]
+  userBadges UserBadge[]
 }
 
 model UserBadge {
@@ -93,8 +94,8 @@ model UserBadge {
   badgeKey  String   @map("badge_key")
   awardedAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge     Badge    @relation(fields: [badgeKey], references: [key], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeKey], references: [key], onDelete: Cascade)
 
   @@id([userId, badgeKey])
   @@index([userId, awardedAt])
@@ -107,16 +108,25 @@ enum StreakKind {
 }
 
 model Streak {
-  userId         String       @map("user_id") @db.Uuid
+  userId         String     @map("user_id") @db.Uuid
   kind           StreakKind
-  currentWeeks   Int          @default(0)
-  bestWeeks      Int          @default(0)
-  lastActiveWeek String       // e.g. "2026-33"
-  updatedAt      DateTime     @updatedAt
+  currentWeeks   Int        @default(0)
+  bestWeeks      Int        @default(0)
+  lastActiveWeek String // e.g. "2026-33"
+  updatedAt      DateTime   @updatedAt
 
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, kind])
 }
 
+model OutboxEvent {
+  id          String    @id @default(uuid())
+  routingKey  String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  attempts    Int       @default(0)
 
+  @@index([publishedAt, createdAt])
+}

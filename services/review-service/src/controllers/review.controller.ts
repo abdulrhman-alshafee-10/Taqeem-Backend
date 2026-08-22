@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { Review } from "../models/review.model.js";
 import { publishEvent } from "../events/publisher.js";
-import { getUserContext } from "@taqeem/shared/auth/context.js";
+import { OutboxEvent } from "../models/outbox.model.js";
+import mongoose from "mongoose";
 import crypto from "node:crypto";
 import { computeVerification } from "../services/verification.service.js";
 import { translateReview } from "../services/translation.service.js";
@@ -73,42 +74,62 @@ export async function create(req: Request, res: Response) {
       checkinId: req.body.checkinId
     });
 
-    const doc = await Review.create({
-      businessId,
-      authorId:   ctx.id,
-      authorName: req.header("x-user-name") || "Anonymous",
-      ...req.body,
-      rating,
-      verification
-    });
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    await publishEvent("review.created", {
-      id: crypto.randomUUID(),
-      reviewId:   doc._id.toString(),
-      businessId: doc.businessId,
-      authorId:   doc.authorId,
-      rating:     doc.rating,
-      aspects:    doc.aspects,
-      createdAt:  doc.createdAt,
-    });
+    try {
+      const [doc] = await Review.create([{
+        businessId,
+        authorId:   ctx.id,
+        authorName: req.header("x-user-name") || "Anonymous",
+        ...req.body,
+        rating,
+        verification
+      }], { session });
 
-    if (verification.weight > 0) {
-      await publishEvent("review.verified_visit", {
+      await OutboxEvent.create([{
         id: crypto.randomUUID(),
-        reviewId: doc._id.toString(),
-        authorId: doc.authorId,
-        weight: verification.weight
-      });
-    }
+        routingKey: "review.created",
+        payload: {
+          id: crypto.randomUUID(),
+          reviewId:   doc._id.toString(),
+          businessId: doc.businessId,
+          authorId:   doc.authorId,
+          rating:     doc.rating,
+          aspects:    doc.aspects,
+          createdAt:  doc.createdAt,
+        }
+      }], { session });
 
-    res.status(201).json({
-      review: doc,
-      prompts: [
-        { id: "orderedItems", q: "What did you order?", type: "chips", options: ["latte", "cappuccino", "brunch plate"] },
-        { id: "wouldReturn",  q: "Would you go back?",  type: "yesno" },
-        { id: "visitTime",    q: "When did you visit?", type: "enum", options: ["breakfast", "lunch", "dinner", "late_night"] }
-      ]
-    });
+      if (verification.weight > 0) {
+        await OutboxEvent.create([{
+          id: crypto.randomUUID(),
+          routingKey: "review.verified_visit",
+          payload: {
+            id: crypto.randomUUID(),
+            reviewId: doc._id.toString(),
+            authorId: doc.authorId,
+            weight: verification.weight
+          }
+        }], { session });
+      }
+
+      await session.commitTransaction();
+
+      res.status(201).json({
+        review: doc,
+        prompts: [
+          { id: "orderedItems", q: "What did you order?", type: "chips", options: ["latte", "cappuccino", "brunch plate"] },
+          { id: "wouldReturn",  q: "Would you go back?",  type: "yesno" },
+          { id: "visitTime",    q: "When did you visit?", type: "enum", options: ["breakfast", "lunch", "dinner", "late_night"] }
+        ]
+      });
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
   } catch (e: any) {
     if (e.code === 11000) return res.status(409).json({ error: "You already reviewed this business" });
     res.status(500).json({ error: e.message });

@@ -2,14 +2,15 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { publishEvent } from "@taqeem/shared/events/publisher.js";
 import { getUserContext } from "@taqeem/shared/auth/context.js";
-import axios from "axios";
+import { businessClient } from "../lib/httpClients.js";
 
 const prisma = new PrismaClient();
 
 // Helper to fetch Business status
 async function checkBusinessReservationsEnabled(businessId: string): Promise<boolean> {
   try {
-    const { data } = await axios.get(`${process.env.BUSINESS_SERVICE_URL || "http://business-service:4002"}/api/businesses/${businessId}`);
+    const resBiz = await businessClient.fetch(`${process.env.BUSINESS_SERVICE_URL || "http://business-service:4002"}/api/businesses/${businessId}`);
+    const data = await resBiz.json();
     return data.isReservationsEnabled === true;
   } catch (err) {
     return false; // safe default

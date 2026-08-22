@@ -2,6 +2,7 @@ import slugify from "slugify";
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { publishEvent } from "../events/publisher.js";
+import { writeOutboxEvent } from "@taqeem/shared/outbox/prismaOutbox.js";
 import { getUserContext } from "@taqeem/shared/auth/context.js";
 import { localizeEntity } from "@taqeem/shared/middlewares/localize.js";
 import { getPrayerTimes } from "../services/prayer.js";
@@ -96,23 +97,29 @@ export async function create(req: Request, res: Response) {
 
   const data = req.body;
   const slug = `${slugify(data.nameEn, { lower: true })}-${crypto.randomUUID().slice(0, 6)}`;
-  const biz = await prisma.business.create({
-    data: {
-      ...req.body,
-      slug,
-      ownerId: ctx.id
-    },
+  const biz = await prisma.$transaction(async (tx) => {
+    const biz = await tx.business.create({
+      data: {
+        ...req.body,
+        slug,
+        ownerId: ctx.id
+      },
+    });
+    await writeOutboxEvent(tx, "business.created", { id: crypto.randomUUID(), business: biz });
+    return biz;
   });
-  await publishEvent("business.created", { id: crypto.randomUUID(), business: biz });
   res.status(201).json(biz);
 }
 
 export async function patch(req: Request, res: Response) {
-  const updated = await prisma.business.update({
-    where: { id: req.params.id },
-    data: req.body,
+  const updated = await prisma.$transaction(async (tx) => {
+    const updated = await tx.business.update({
+      where: { id: req.params.id },
+      data: req.body,
+    });
+    await writeOutboxEvent(tx, "business.updated", { id: crypto.randomUUID(), business: updated });
+    return updated;
   });
-  await publishEvent("business.updated", { id: crypto.randomUUID(), business: updated });
   res.json(updated);
 }
 
@@ -123,15 +130,18 @@ export async function claim(req: Request, res: Response) {
   if (!biz) return res.status(404).json({ error: "Not found" });
   if (biz.ownerId) return res.status(409).json({ error: "Already claimed" });
 
-  const claim = await prisma.businessClaim.create({
-    data: { businessId, claimantId: ctx.id as string, proofUrl: req.body.proofUrl, status: "PENDING" },
-  });
-  await prisma.business.update({
-    where: { id: businessId },
-    data: { claimStatus: "PENDING" },
-  });
-  await publishEvent("business.claim_submitted", {
-    id: crypto.randomUUID(), claimId: claim.id, businessId, claimantId: ctx.id,
+  const claim = await prisma.$transaction(async (tx) => {
+    const claim = await tx.businessClaim.create({
+      data: { businessId, claimantId: ctx.id as string, proofUrl: req.body.proofUrl, status: "PENDING" },
+    });
+    await tx.business.update({
+      where: { id: businessId },
+      data: { claimStatus: "PENDING" },
+    });
+    await writeOutboxEvent(tx, "business.claim_submitted", {
+      id: crypto.randomUUID(), claimId: claim.id, businessId, claimantId: ctx.id,
+    });
+    return claim;
   });
   res.status(202).json(claim);
 }

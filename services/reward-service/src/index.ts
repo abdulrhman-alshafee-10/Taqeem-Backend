@@ -1,3 +1,6 @@
+import { createHealthRouter } from "@taqeem/shared/health/healthRouter.js";
+import { registerGracefulShutdown } from "@taqeem/shared/shutdown/gracefulShutdown.js";
+import http from "node:http";
 import "@taqeem/shared/tracing/tracing.js";
 import express from "express";
 import { PrismaClient } from "@prisma/client-reward";
@@ -17,6 +20,10 @@ app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "reward-service")
 app.use("/api/rewards", rewardsRoutes);
 
 const port = process.env.PORT || 4014;
+
+
+const healthRouter = createHealthRouter("reward-service");
+app.use(healthRouter);
 
 export async function start() {
   await setupEvents();

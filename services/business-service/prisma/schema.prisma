@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -49,13 +50,11 @@ enum BusinessStatus {
   PERMANENTLY_CLOSED
 }
 
-
-
 enum PriceTier {
-  ONE     // $
-  TWO     // $$
-  THREE   // $$$
-  FOUR    // $$$$
+  ONE // $
+  TWO // $$
+  THREE // $$$
+  FOUR // $$$$
 }
 
 enum HalalTier {
@@ -66,86 +65,86 @@ enum HalalTier {
 }
 
 model Business {
-  id            String       @id @default(uuid()) @db.Uuid
-  ownerId       String?      @map("owner_id") @db.Uuid   // soft FK to User.id
-  nameEn        String       @map("name_en")
-  nameAr        String?      @map("name_ar")
-  slug          String       @unique
-  descriptionEn String?      @map("description_en")
-  descriptionAr String?      @map("description_ar")
-  categories    String[]     @default([])
-  priceTier     PriceTier?   @map("price_tier")
-  phone         String?
-  website       String?
-  email         String?
-  photos        String[]     @default([])
-  features         String[] @default([])                @map("features")
-  dietary          String[] @default([])                @map("dietary")
-  atmosphere       String[] @default([])                @map("atmosphere")
-  paymentMethods   String[] @default([])                @map("payment_methods")
-  accessibility    Json     @default("{}")              @map("accessibility")
+  id             String     @id @default(uuid()) @db.Uuid
+  ownerId        String?    @map("owner_id") @db.Uuid // soft FK to User.id
+  nameEn         String     @map("name_en")
+  nameAr         String?    @map("name_ar")
+  slug           String     @unique
+  descriptionEn  String?    @map("description_en")
+  descriptionAr  String?    @map("description_ar")
+  categories     String[]   @default([])
+  priceTier      PriceTier? @map("price_tier")
+  phone          String?
+  website        String?
+  email          String?
+  photos         String[]   @default([])
+  features       String[]   @default([]) @map("features")
+  dietary        String[]   @default([]) @map("dietary")
+  atmosphere     String[]   @default([]) @map("atmosphere")
+  paymentMethods String[]   @default([]) @map("payment_methods")
+  accessibility  Json       @default("{}") @map("accessibility")
 
   accessibilityConfirmations AccessibilityConfirmation[]
 
-  halalTier          HalalTier @default(NONE) @map("halal_tier")
-  halalCertBody      String?   @map("halal_cert_body")
-  halalCertNumber    String?   @map("halal_cert_number")
-  halalNotes         String?   @map("halal_notes")
-  servesAlcohol      Boolean   @default(false) @map("serves_alcohol")
-  servesPork         Boolean   @default(false) @map("serves_pork")
-  closesDuringPrayers String[] @default([]) @map("closes_during_prayers")
-  prayerCloseMinutes  Int?     @default(20) @map("prayer_close_minutes")
-  hasFamilySection    Boolean  @default(false) @map("has_family_section")
-  hasFamilyOnlyHours  Boolean  @default(false) @map("has_family_only_hours")
-  femaleFriendly      String   @default("UNKNOWN") @map("female_friendly")
-  deliveryLinks       Json?    @default("{}") @map("delivery_links")
+  halalTier           HalalTier @default(NONE) @map("halal_tier")
+  halalCertBody       String?   @map("halal_cert_body")
+  halalCertNumber     String?   @map("halal_cert_number")
+  halalNotes          String?   @map("halal_notes")
+  servesAlcohol       Boolean   @default(false) @map("serves_alcohol")
+  servesPork          Boolean   @default(false) @map("serves_pork")
+  closesDuringPrayers String[]  @default([]) @map("closes_during_prayers")
+  prayerCloseMinutes  Int?      @default(20) @map("prayer_close_minutes")
+  hasFamilySection    Boolean   @default(false) @map("has_family_section")
+  hasFamilyOnlyHours  Boolean   @default(false) @map("has_family_only_hours")
+  femaleFriendly      String    @default("UNKNOWN") @map("female_friendly")
+  deliveryLinks       Json?     @default("{}") @map("delivery_links")
 
   // Location
-  addressLine1  String       @map("address_line_1")
-  addressLine2  String?      @map("address_line_2")
-  city          String
-  region        String
-  country       String
-  postalCode    String       @map("postal_code")
-  latitude      Float
-  longitude     Float
+  addressLine1 String  @map("address_line_1")
+  addressLine2 String? @map("address_line_2")
+  city         String
+  region       String
+  country      String
+  postalCode   String  @map("postal_code")
+  latitude     Float
+  longitude    Float
 
   // Denormalized aggregates (updated by event consumer)
   // Rating Aggregates
-  ratingCount    Int           @default(0) @map("rating_count")
-  ratingAvg      Float         @default(0.0) @map("rating_avg")
-  aspectAvgs     Json          @default("{}") @map("aspect_avgs")
-  aspectCounts   Json          @default("{}") @map("aspect_counts")
-  verifiedReviewCount Int      @default(0) @map("verified_review_count")
+  ratingCount         Int   @default(0) @map("rating_count")
+  ratingAvg           Float @default(0.0) @map("rating_avg")
+  aspectAvgs          Json  @default("{}") @map("aspect_avgs")
+  aspectCounts        Json  @default("{}") @map("aspect_counts")
+  verifiedReviewCount Int   @default(0) @map("verified_review_count")
 
   // Tiers
-  seniorityTier  SeniorityTier  @default(NEW)        @map("seniority_tier")
-  qualityTier    QualityTier    @default(UNRATED)    @map("quality_tier")
-  engagementTier EngagementTier @default(UNCLAIMED)  @map("engagement_tier")
+  seniorityTier  SeniorityTier  @default(NEW) @map("seniority_tier")
+  qualityTier    QualityTier    @default(UNRATED) @map("quality_tier")
+  engagementTier EngagementTier @default(UNCLAIMED) @map("engagement_tier")
   levelUpdatedAt DateTime?      @map("level_updated_at")
 
   // Claim
-  claimStatus   ClaimStatus  @default(UNCLAIMED) @map("claim_status")
+  claimStatus ClaimStatus @default(UNCLAIMED) @map("claim_status")
 
-  hours         BusinessHours[]
-  claims        BusinessClaim[]
-  members       BusinessMember[]
-  summary       BusinessSummary?
+  hours          BusinessHours[]
+  claims         BusinessClaim[]
+  members        BusinessMember[]
+  summary        BusinessSummary?
   summaryHistory BusinessSummaryHistory[]
-  badges        BusinessBadge[]
+  badges         BusinessBadge[]
 
-  groupId       String?        @map("group_id") @db.Uuid
-  group         BusinessGroup? @relation(fields: [groupId], references: [id])
+  groupId String?        @map("group_id") @db.Uuid
+  group   BusinessGroup? @relation(fields: [groupId], references: [id])
 
-  isReservationsEnabled Boolean @default(false) @map("is_reservations_enabled")
-  isActive      Boolean      @default(true) @map("is_active")
-  businessStatus BusinessStatus @default(OPEN) @map("business_status")
-  closedAt       DateTime? @map("closed_at")
-  mergedIntoId   String?   @map("merged_into_id") @db.Uuid
-  vertical       String        @default("FOOD_DRINK")
-  subVertical    String?       @default("RESTAURANT")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt      @map("updated_at")
+  isReservationsEnabled Boolean        @default(false) @map("is_reservations_enabled")
+  isActive              Boolean        @default(true) @map("is_active")
+  businessStatus        BusinessStatus @default(OPEN) @map("business_status")
+  closedAt              DateTime?      @map("closed_at")
+  mergedIntoId          String?        @map("merged_into_id") @db.Uuid
+  vertical              String         @default("FOOD_DRINK")
+  subVertical           String?        @default("RESTAURANT")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
 
   @@index([ownerId])
   @@index([groupId])
@@ -155,21 +154,21 @@ model Business {
   @@index([seniorityTier])
   @@index([city, region, country])
   @@index([categories], type: Gin)
-  @@index([features],       type: Gin)
-  @@index([dietary],        type: Gin)
-  @@index([atmosphere],     type: Gin)
+  @@index([features], type: Gin)
+  @@index([dietary], type: Gin)
+  @@index([atmosphere], type: Gin)
   @@index([paymentMethods], type: Gin)
   @@map("businesses")
 }
 
 model BusinessHours {
-  id          String   @id @default(uuid()) @db.Uuid
-  businessId  String   @map("business_id") @db.Uuid
+  id         String  @id @default(uuid()) @db.Uuid
+  businessId String  @map("business_id") @db.Uuid
   // 0 = Sunday ... 6 = Saturday
-  dayOfWeek   Int      @map("day_of_week")
-  openTime    String   @map("open_time")   // "09:00"
-  closeTime   String   @map("close_time")  // "22:00"
-  isClosed    Boolean  @default(false) @map("is_closed")
+  dayOfWeek  Int     @map("day_of_week")
+  openTime   String  @map("open_time") // "09:00"
+  closeTime  String  @map("close_time") // "22:00"
+  isClosed   Boolean @default(false) @map("is_closed")
 
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
@@ -178,14 +177,14 @@ model BusinessHours {
 }
 
 model BusinessClaim {
-  id            String       @id @default(uuid()) @db.Uuid
-  businessId    String       @map("business_id") @db.Uuid
-  claimantId    String       @map("claimant_id") @db.Uuid  // soft FK to User.id
-  proofUrl      String?      @map("proof_url")
-  status        ClaimStatus  @default(PENDING)
-  reviewerNote  String?      @map("reviewer_note")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  resolvedAt    DateTime?    @map("resolved_at")
+  id           String      @id @default(uuid()) @db.Uuid
+  businessId   String      @map("business_id") @db.Uuid
+  claimantId   String      @map("claimant_id") @db.Uuid // soft FK to User.id
+  proofUrl     String?     @map("proof_url")
+  status       ClaimStatus @default(PENDING)
+  reviewerNote String?     @map("reviewer_note")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  resolvedAt   DateTime?   @map("resolved_at")
 
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
@@ -195,25 +194,25 @@ model BusinessClaim {
 }
 
 model Menu {
-  id         String       @id @default(uuid()) @db.Uuid
-  businessId String       @map("business_id") @db.Uuid
-  name       String       // e.g. "Main menu", "Ramadan menu"
-  currency   String       @default("EGP")
-  isActive   Boolean      @default(true) @map("is_active")
-  validFrom  DateTime?    @map("valid_from")
-  validTo    DateTime?    @map("valid_to")
+  id         String        @id @default(uuid()) @db.Uuid
+  businessId String        @map("business_id") @db.Uuid
+  name       String // e.g. "Main menu", "Ramadan menu"
+  currency   String        @default("EGP")
+  isActive   Boolean       @default(true) @map("is_active")
+  validFrom  DateTime?     @map("valid_from")
+  validTo    DateTime?     @map("valid_to")
   sections   MenuSection[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   @@index([businessId, isActive])
 }
 
 model MenuSection {
-  id       String      @id @default(uuid()) @db.Uuid
-  menuId   String      @map("menu_id") @db.Uuid
+  id       String     @id @default(uuid()) @db.Uuid
+  menuId   String     @map("menu_id") @db.Uuid
   title    String
-  position Int         @default(0)
+  position Int        @default(0)
   items    MenuItem[]
 
   menu Menu @relation(fields: [menuId], references: [id], onDelete: Cascade)
@@ -228,13 +227,13 @@ model MenuItem {
   nameAr        String?       @map("name_ar")
   descriptionEn String?       @map("description_en")
   descriptionAr String?       @map("description_ar")
-  basePrice     Decimal       @db.Decimal(10,2) @map("base_price")
+  basePrice     Decimal       @map("base_price") @db.Decimal(10, 2)
   photoUrl      String?       @map("photo_url")
   isAvailable   Boolean       @default(true)
-  dietary       String[]      @default([])   // vegan, vegetarian, halal, gluten_free
-  spiciness     Int?          @db.SmallInt   // 0..3
+  dietary       String[]      @default([]) // vegan, vegetarian, halal, gluten_free
+  spiciness     Int?          @db.SmallInt // 0..3
   caloriesKcal  Int?          @map("calories_kcal")
-  tags          String[]      @default([])   // popular, chef_special, new
+  tags          String[]      @default([]) // popular, chef_special, new
   position      Int           @default(0)
   variants      MenuVariant[]
 
@@ -244,10 +243,10 @@ model MenuItem {
 }
 
 model MenuVariant {
-  id      String   @id @default(uuid()) @db.Uuid
-  itemId  String   @map("item_id") @db.Uuid
-  label   String              // "Small", "Large", "With extra shot"
-  priceDelta Decimal @db.Decimal(10,2) @default(0)
+  id         String  @id @default(uuid()) @db.Uuid
+  itemId     String  @map("item_id") @db.Uuid
+  label      String // "Small", "Large", "With extra shot"
+  priceDelta Decimal @default(0) @db.Decimal(10, 2)
 
   item MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }
@@ -262,7 +261,7 @@ enum OwnerPostType {
 model OwnerPost {
   id          String        @id @default(uuid()) @db.Uuid
   businessId  String        @map("business_id") @db.Uuid
-  authorId    String        @map("author_id") @db.Uuid   // owner userId
+  authorId    String        @map("author_id") @db.Uuid // owner userId
   type        OwnerPostType
   title       String
   body        String?
@@ -279,27 +278,27 @@ model OwnerPost {
 }
 
 model BusinessQuestion {
-  id           String  @id @default(uuid()) @db.Uuid
-  businessId   String  @map("business_id") @db.Uuid
-  askerId      String  @map("asker_id") @db.Uuid
-  body         String  @db.VarChar(500)
-  isHidden     Boolean @default(false)
-  helpfulCount Int     @default(0)
+  id           String   @id @default(uuid()) @db.Uuid
+  businessId   String   @map("business_id") @db.Uuid
+  askerId      String   @map("asker_id") @db.Uuid
+  body         String   @db.VarChar(500)
+  isHidden     Boolean  @default(false)
+  helpfulCount Int      @default(0)
   createdAt    DateTime @default(now())
 
-  answers      BusinessAnswer[]
+  answers BusinessAnswer[]
 
   @@index([businessId, createdAt])
 }
 
 model BusinessAnswer {
-  id          String  @id @default(uuid()) @db.Uuid
-  questionId  String  @map("question_id") @db.Uuid
-  authorId    String  @map("author_id") @db.Uuid
-  isOwner     Boolean @default(false)
-  body        String  @db.VarChar(1000)
-  helpfulCount Int    @default(0)
-  createdAt   DateTime @default(now())
+  id           String   @id @default(uuid()) @db.Uuid
+  questionId   String   @map("question_id") @db.Uuid
+  authorId     String   @map("author_id") @db.Uuid
+  isOwner      Boolean  @default(false)
+  body         String   @db.VarChar(1000)
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
 
   question BusinessQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
@@ -326,11 +325,11 @@ enum BusinessMemberRole {
 }
 
 model BusinessMember {
-  businessId String              @map("business_id") @db.Uuid
-  userId     String              @map("user_id") @db.Uuid
-  role       BusinessMemberRole
+  businessId  String             @map("business_id") @db.Uuid
+  userId      String             @map("user_id") @db.Uuid
+  role        BusinessMemberRole
   invitedById String?            @map("invited_by_id") @db.Uuid
-  addedAt    DateTime            @default(now())
+  addedAt     DateTime           @default(now())
 
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
@@ -380,25 +379,25 @@ enum DealType {
 }
 
 model Deal {
-  id            String     @id @default(uuid()) @db.Uuid
-  businessId    String     @map("business_id") @db.Uuid
-  type          DealType
-  title         String
-  description   String?
-  percentOff    Int?       @map("percent_off")
-  fixedOff      Decimal?   @db.Decimal(10,2) @map("fixed_off")
-  freeItemId    String?    @db.Uuid @map("free_item_id")
-  minSubtotal   Decimal?   @db.Decimal(10,2) @map("min_subtotal")
-  validDays     Int[]      @default([]) @map("valid_days")   // 0..6 (Sun..Sat)
-  validHoursFrom String?   @map("valid_hours_from")           // "17:00"
-  validHoursTo   String?   @map("valid_hours_to")             // "21:00"
-  validFrom     DateTime   @map("valid_from")
-  validTo       DateTime?  @map("valid_to")
-  usageLimit    Int?       @map("usage_limit")                 // total redemptions
-  perUserLimit  Int?       @default(1) @map("per_user_limit")
-  couponCode    String?    @unique @map("coupon_code")
-  isActive      Boolean    @default(true)
-  createdAt     DateTime   @default(now())
+  id             String    @id @default(uuid()) @db.Uuid
+  businessId     String    @map("business_id") @db.Uuid
+  type           DealType
+  title          String
+  description    String?
+  percentOff     Int?      @map("percent_off")
+  fixedOff       Decimal?  @map("fixed_off") @db.Decimal(10, 2)
+  freeItemId     String?   @map("free_item_id") @db.Uuid
+  minSubtotal    Decimal?  @map("min_subtotal") @db.Decimal(10, 2)
+  validDays      Int[]     @default([]) @map("valid_days") // 0..6 (Sun..Sat)
+  validHoursFrom String?   @map("valid_hours_from") // "17:00"
+  validHoursTo   String?   @map("valid_hours_to") // "21:00"
+  validFrom      DateTime  @map("valid_from")
+  validTo        DateTime? @map("valid_to")
+  usageLimit     Int?      @map("usage_limit") // total redemptions
+  perUserLimit   Int?      @default(1) @map("per_user_limit")
+  couponCode     String?   @unique @map("coupon_code")
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
 
   @@index([businessId, isActive])
 }
@@ -408,7 +407,7 @@ model DealRedemption {
   dealId     String   @map("deal_id") @db.Uuid
   userId     String   @map("user_id") @db.Uuid
   orderId    String?  @map("order_id") @db.Uuid
-  amount     Decimal  @db.Decimal(10,2)
+  amount     Decimal  @db.Decimal(10, 2)
   redeemedAt DateTime @default(now())
 
   @@unique([dealId, orderId])
@@ -417,20 +416,20 @@ model DealRedemption {
 }
 
 model RamadanSchedule {
-  businessId   String   @id @db.Uuid @map("business_id")
-  iftarOpen    String                        // "17:30" (relative — or "AT_MAGHRIB")
-  iftarClose   String                        // "23:59"
-  suhoorOpen   String?                       // "00:30"
-  suhoorClose  String?                       // "04:00" (relative — or "AT_FAJR")
-  dayClosed    Boolean  @default(true)       // closed all day outside iftar/suhoor windows
-  isActive     Boolean  @default(true)
+  businessId  String  @id @map("business_id") @db.Uuid
+  iftarOpen   String // "17:30" (relative — or "AT_MAGHRIB")
+  iftarClose  String // "23:59"
+  suhoorOpen  String? // "00:30"
+  suhoorClose String? // "04:00" (relative — or "AT_FAJR")
+  dayClosed   Boolean @default(true) // closed all day outside iftar/suhoor windows
+  isActive    Boolean @default(true)
 }
 
 model HalalConfirmation {
-  businessId   String   @map("business_id") @db.Uuid
-  userId       String   @map("user_id") @db.Uuid
-  photoUrl     String?  @map("photo_url")
-  createdAt    DateTime @default(now()) @map("created_at")
+  businessId String   @map("business_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  photoUrl   String?  @map("photo_url")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@id([businessId, userId])
 }
@@ -438,10 +437,10 @@ model HalalConfirmation {
 model DeliveryLink {
   id         String   @id @default(uuid()) @db.Uuid
   businessId String   @map("business_id") @db.Uuid
-  provider   String                                    // "talabat" | "otlob" | ...
+  provider   String // "talabat" | "otlob" | ...
   externalId String   @map("external_id")
-  status     String                                    // "PENDING" | "ACTIVE" | "REVOKED"
-  authRef    String?                                   // opaque token/customerId
+  status     String // "PENDING" | "ACTIVE" | "REVOKED"
+  authRef    String? // opaque token/customerId
   createdAt  DateTime @default(now())
 
   @@unique([businessId, provider])
@@ -456,7 +455,7 @@ model AccessibilityConfirmation {
   photoUrl   String?
   createdAt  DateTime @default(now())
 
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@unique([businessId, userId, path])
   @@index([businessId, path])
@@ -464,15 +463,15 @@ model AccessibilityConfirmation {
 }
 
 model BusinessBadgeDef {
-  key         String   @id
-  labelEn     String
-  labelAr     String
-  descEn      String?
-  descAr      String?
-  iconUrl     String?
-  category    String                     // seniority | milestone | quality | community | award
-  scope       String                     // "*"| "FOOD_DRINK" | "CULTURE" | ...
-  isRetired   Boolean  @default(false)
+  key       String  @id
+  labelEn   String
+  labelAr   String
+  descEn    String?
+  descAr    String?
+  iconUrl   String?
+  category  String // seniority | milestone | quality | community | award
+  scope     String // "*"| "FOOD_DRINK" | "CULTURE" | ...
+  isRetired Boolean @default(false)
 }
 
 model BusinessBadge {
@@ -480,10 +479,21 @@ model BusinessBadge {
   businessId String   @map("business_id") @db.Uuid
   badgeKey   String   @map("badge_key")
   awardedAt  DateTime @default(now())
-  metadata   Json?                        // e.g. { "year": 2026, "city": "Cairo", "vertical": "FOOD_DRINK" }
+  metadata   Json? // e.g. { "year": 2026, "city": "Cairo", "vertical": "FOOD_DRINK" }
 
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@index([businessId, badgeKey])
   @@index([badgeKey, awardedAt])
+}
+
+model OutboxEvent {
+  id          String    @id @default(uuid())
+  routingKey  String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  attempts    Int       @default(0)
+
+  @@index([publishedAt, createdAt])
 }

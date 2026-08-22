@@ -1,0 +1,15 @@
+{
+  "name": "dlq-replay",
+  "version": "1.0.0",
+  "description": "DLQ Replay Tool for Taqeem",
+  "main": "dlq-replay.js",
+  "type": "module",
+  "scripts": {
+    "start": "node dlq-replay.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.5"
+  }
+}

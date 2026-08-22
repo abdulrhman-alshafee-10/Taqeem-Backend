@@ -140,6 +140,13 @@ services:
       - rabbitmq
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4000/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   user-service:
     build:
       context: .
@@ -160,6 +167,13 @@ services:
       - ./jwt.key:/keys/jwt.key:ro
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4001/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
   business-service:
     build:
       context: .
@@ -177,6 +191,13 @@ services:
       - rabbitmq
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4002/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   review-service:
     build:
       context: .
@@ -194,6 +215,13 @@ services:
       - rabbitmq
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4003/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   search-service:
     build:
       context: .
@@ -211,6 +239,13 @@ services:
       - rabbitmq
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4004/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   analytics-service:
     build:
       context: .
@@ -231,6 +266,13 @@ services:
       - rabbitmq
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4005/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   agent-service:
     build:
       context: .
@@ -258,6 +300,13 @@ services:
       rabbitmq:   { condition: service_healthy }
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4000/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   social-service:
     build:
       context: .
@@ -278,6 +327,13 @@ services:
       - redis
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4010/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   notification-service:
     build:
       context: .
@@ -305,6 +361,13 @@ services:
       - redis
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4008/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   reservation-service:
     build:
       context: .
@@ -324,6 +387,13 @@ services:
       - rabbitmq
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4007/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   payment-service:
     build:
       context: .
@@ -350,6 +420,13 @@ services:
       - redis
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4009/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   order-service:
     build:
       context: .
@@ -370,6 +447,13 @@ services:
       - rabbitmq
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4011/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   moderation-service:
     build:
       context: .
@@ -394,6 +478,13 @@ services:
       - redis
     networks: [taqeem_network]
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4012/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   feed-service:
     build:
       context: .
@@ -416,6 +507,13 @@ services:
     networks:
       - taqeem_network
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4013/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   content-service:
     build:
       context: .
@@ -436,6 +534,13 @@ services:
     networks:
       - taqeem_network
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4015/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   reward-service:
     build:
       context: .
@@ -457,6 +562,13 @@ services:
     networks:
       - taqeem_network
 
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4014/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: taqeem_otel_collector

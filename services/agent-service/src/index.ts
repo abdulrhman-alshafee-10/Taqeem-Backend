@@ -1,3 +1,6 @@
+import { createHealthRouter } from "@taqeem/shared/health/healthRouter.js";
+import { registerGracefulShutdown } from "@taqeem/shared/shutdown/gracefulShutdown.js";
+import http from "node:http";
 import "@taqeem/shared/tracing/tracing.js";
 import express from "express";
 import agentRoutes from "./routes/agent.routes.js";
@@ -13,7 +16,10 @@ app.use(express.json({ limit: "200kb" }));
 
 app.use(httpLogger(process.env.OTEL_SERVICE_NAME ?? "agent-service"));
 app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "agent-service"));
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+const healthRouter = createHealthRouter("agent-service");
+app.use(healthRouter);
+
 
 app.get("/metrics", async (_req: any, res: any) => {
   res.set("Content-Type", register.contentType);
@@ -47,7 +53,10 @@ export async function startWorkers() {
     await buildHelpIndex(path.join(process.cwd(), "knowledge"));
   }
 
-  app.listen(PORT, () => console.log(`agent-service on :${PORT}`));
+  
+  const server = http.createServer(app);
+  registerGracefulShutdown(server, { drainMs: 5000 });
+  server.listen(PORT, () => console.log(`agent-service on :${PORT}`));
 }
 
 if (process.env.NODE_ENV !== "test") {

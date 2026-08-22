@@ -1,3 +1,6 @@
+import { createHealthRouter } from "@taqeem/shared/health/healthRouter.js";
+import { registerGracefulShutdown } from "@taqeem/shared/shutdown/gracefulShutdown.js";
+import http from "node:http";
 import "@taqeem/shared/tracing/tracing.js";
 import express, { Request, Response } from "express";
 import businessRoutes from "./routes/business.routes.js";
@@ -11,13 +14,20 @@ import dealRoutes from "./routes/deal.routes.js";
 import internalRoutes from "./routes/internal.routes.js";
 import { initPublisher } from "@taqeem/shared/events/publisher.js";
 import { initConsumer } from "./events/consumer.js";
+import { startPrismaOutboxPoller } from "@taqeem/shared/outbox/prismaPoller.js";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export const app = express();
 app.use(express.json({ limit: "200kb" }));
 
 app.use(httpLogger(process.env.OTEL_SERVICE_NAME ?? "business-service"));
 app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "business-service"));
-app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
+
+const healthRouter = createHealthRouter("business-service");
+app.use(healthRouter);
+
 
 app.get("/metrics", async (_req: any, res: any) => {
   res.set("Content-Type", register.contentType);
@@ -46,6 +56,7 @@ export async function start() {
   await initPublisher();
   await initConsumer();
   await startBadgeConsumers();
+  const outboxPoller = startPrismaOutboxPoller(prisma, "business-service");
   app.listen(PORT, () => {
     console.log(`business-service listening on port ${PORT}`);
   });

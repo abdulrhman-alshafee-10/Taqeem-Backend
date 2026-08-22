@@ -11,7 +11,7 @@
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
-    "@prisma/client": "^5.13.0",
+    "@prisma/client": "^5.22.0",
     "@taqeem/shared": "*",
     "amqplib": "^0.10.3",
     "axios": "^1.19.0",

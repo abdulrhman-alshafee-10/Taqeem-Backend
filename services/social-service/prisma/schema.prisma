@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -8,10 +9,10 @@ datasource db {
 }
 
 enum CollectionType {
-  USER_LIST         // private or shared user list
-  EDITORIAL         // curated by staff, always public
-  LOCAL_GUIDE       // curated by a Local Guide, public
-  AUTO              // system-generated
+  USER_LIST // private or shared user list
+  EDITORIAL // curated by staff, always public
+  LOCAL_GUIDE // curated by a Local Guide, public
+  AUTO // system-generated
 }
 
 enum CollectionVisibility {
@@ -21,30 +22,30 @@ enum CollectionVisibility {
 }
 
 model Collection {
-  id            String                @id @default(uuid()) @db.Uuid
-  ownerId       String                @map("owner_id") @db.Uuid
-  type          CollectionType        @default(USER_LIST)
-  visibility    CollectionVisibility  @default(PRIVATE)
+  id            String               @id @default(uuid()) @db.Uuid
+  ownerId       String               @map("owner_id") @db.Uuid
+  type          CollectionType       @default(USER_LIST)
+  visibility    CollectionVisibility @default(PRIVATE)
   title         String
-  slug          String                @unique
+  slug          String               @unique
   description   String?
-  coverImageUrl String?               @map("cover_image_url")
+  coverImageUrl String?              @map("cover_image_url")
   city          String?
-  categories    String[]              @default([])
-  tags          String[]              @default([])
-  isFeatured    Boolean               @default(false) @map("is_featured")
-  systemKey     String?               @map("system_key")
+  categories    String[]             @default([])
+  tags          String[]             @default([])
+  isFeatured    Boolean              @default(false) @map("is_featured")
+  systemKey     String?              @map("system_key")
 
   items         CollectionItem[]
   followers     CollectionFollower[]
   collaborators CollectionCollaborator[]
 
-  createdAt     DateTime              @default(now()) @map("created_at")
-  updatedAt     DateTime              @updatedAt      @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@unique([ownerId, systemKey])
   @@index([type, visibility, city])
   @@index([ownerId])
-  @@unique([ownerId, systemKey])
 }
 
 model CollectionItem {
@@ -63,9 +64,9 @@ model CollectionItem {
 }
 
 model CollectionCollaborator {
-  collectionId String @map("collection_id") @db.Uuid
-  userId       String @map("user_id") @db.Uuid
-  role         String @default("EDITOR")  // EDITOR | VIEWER
+  collectionId String   @map("collection_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  role         String   @default("EDITOR") // EDITOR | VIEWER
   addedAt      DateTime @default(now())
 
   collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
@@ -101,58 +102,58 @@ model Follow {
 }
 
 model Recommendation {
-  id            String    @id @default(uuid()) @db.Uuid
-  fromUserId    String    @map("from_user_id") @db.Uuid
-  toUserId      String    @map("to_user_id") @db.Uuid
-  businessId    String    @map("business_id") @db.Uuid
-  note          String?   @db.VarChar(280)
-  createdAt     DateTime  @default(now())
-  seenAt        DateTime? @map("seen_at")
+  id         String    @id @default(uuid()) @db.Uuid
+  fromUserId String    @map("from_user_id") @db.Uuid
+  toUserId   String    @map("to_user_id") @db.Uuid
+  businessId String    @map("business_id") @db.Uuid
+  note       String?   @db.VarChar(280)
+  createdAt  DateTime  @default(now())
+  seenAt     DateTime? @map("seen_at")
 
+  @@unique([fromUserId, toUserId, businessId])
   @@index([toUserId, createdAt])
   @@index([fromUserId, businessId])
-  @@unique([fromUserId, toUserId, businessId])
 }
 
 model LocalGuide {
-  userId       String     @id @db.Uuid                 // soft FK to User.id
-  city         String
-  status       String     @default("APPLIED")           // APPLIED | APPROVED | REVOKED
+  userId          String    @id @db.Uuid // soft FK to User.id
+  city            String
+  status          String    @default("APPLIED") // APPLIED | APPROVED | REVOKED
   applicationText String?
-  approvedById String?    @map("approved_by_id") @db.Uuid
-  approvedAt   DateTime?
-  perks        String[]   @default([])                  // ["priority_support","early_features", "editorial_publish", "verified_badge"]
+  approvedById    String?   @map("approved_by_id") @db.Uuid
+  approvedAt      DateTime?
+  perks           String[]  @default([]) // ["priority_support","early_features", "editorial_publish", "verified_badge"]
 
   @@index([city, status])
 }
 
 model Meetup {
-  id              String   @id @default(uuid()) @db.Uuid
-  organizerId     String   @map("organizer_id") @db.Uuid
-  businessId      String   @map("business_id") @db.Uuid   // hosted at
+  id              String    @id @default(uuid()) @db.Uuid
+  organizerId     String    @map("organizer_id") @db.Uuid
+  businessId      String    @map("business_id") @db.Uuid // hosted at
   title           String
   description     String?
   startsAt        DateTime
   endsAt          DateTime?
   capacity        Int?
-  isPublic        Boolean  @default(true)
-  status          String   @default("SCHEDULED")           // SCHEDULED | CANCELLED | ENDED
-  createdAt       DateTime @default(now())
-  tags            String[] @default([])
+  isPublic        Boolean   @default(true)
+  status          String    @default("SCHEDULED") // SCHEDULED | CANCELLED | ENDED
+  createdAt       DateTime  @default(now())
+  tags            String[]  @default([])
   coverImageUrl   String?
-  reservationId   String?  @map("reservation_id") @db.Uuid   // linked auto-reservation
-  requireApproval Boolean  @default(false)
+  reservationId   String?   @map("reservation_id") @db.Uuid // linked auto-reservation
+  requireApproval Boolean   @default(false)
 
-  rsvps           MeetupRsvp[]
+  rsvps MeetupRsvp[]
 
   @@index([startsAt])
   @@index([businessId])
 }
 
 model MeetupRsvp {
-  meetupId  String @map("meetup_id") @db.Uuid
-  userId    String @map("user_id") @db.Uuid
-  status    String @default("GOING")   // GOING | MAYBE | DECLINED
+  meetupId  String   @map("meetup_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  status    String   @default("GOING") // GOING | MAYBE | DECLINED
   createdAt DateTime @default(now())
 
   meetup Meetup @relation(fields: [meetupId], references: [id], onDelete: Cascade)
@@ -168,4 +169,15 @@ model WantAlert {
   createdAt  DateTime @default(now())
 
   @@unique([userId, businessId])
+}
+
+model OutboxEvent {
+  id          String    @id @default(uuid())
+  routingKey  String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  attempts    Int       @default(0)
+
+  @@index([publishedAt, createdAt])
 }

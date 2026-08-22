@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -8,7 +9,7 @@ datasource db {
 }
 
 enum ReservationStatus {
-  PENDING       // held, awaiting deposit or confirmation
+  PENDING // held, awaiting deposit or confirmation
   CONFIRMED
   CANCELLED
   NO_SHOW
@@ -16,51 +17,51 @@ enum ReservationStatus {
 }
 
 model Table {
-  id           String   @id @default(uuid()) @db.Uuid
-  businessId   String   @map("business_id") @db.Uuid
-  label        String                                    // "T1", "Patio-3"
+  id           String  @id @default(uuid()) @db.Uuid
+  businessId   String  @map("business_id") @db.Uuid
+  label        String // "T1", "Patio-3"
   capacity     Int
-  minPartySize Int      @default(1)
-  isActive     Boolean  @default(true)
-  groupZone    String?  @map("group_zone")
+  minPartySize Int     @default(1)
+  isActive     Boolean @default(true)
+  groupZone    String? @map("group_zone")
 
   @@index([businessId, isActive])
   @@map("tables")
 }
 
 model AvailabilityPolicy {
-  id            String @id @default(uuid()) @db.Uuid
-  businessId    String @unique @map("business_id") @db.Uuid
-  slotMinutes   Int    @default(30)                       // reservation grid
-  turnMinutes   Int    @default(90)                       // avg time to turn a table
-  maxDaysAhead  Int    @default(60)
-  cutoffMinutes Int    @default(30)                       // no bookings within X min of start
-  depositRequired Boolean @default(false)
-  depositAmount   Decimal? @db.Decimal(10,2)
+  id              String   @id @default(uuid()) @db.Uuid
+  businessId      String   @unique @map("business_id") @db.Uuid
+  slotMinutes     Int      @default(30) // reservation grid
+  turnMinutes     Int      @default(90) // avg time to turn a table
+  maxDaysAhead    Int      @default(60)
+  cutoffMinutes   Int      @default(30) // no bookings within X min of start
+  depositRequired Boolean  @default(false)
+  depositAmount   Decimal? @db.Decimal(10, 2)
   currency        String   @default("EGP")
-  cancelWindow    Int      @default(120)                  // free cancel up to N min before
+  cancelWindow    Int      @default(120) // free cancel up to N min before
 
   @@map("availability_policies")
 }
 
 model Reservation {
-  id           String            @id @default(uuid()) @db.Uuid
-  businessId   String            @map("business_id") @db.Uuid
-  userId       String            @map("user_id") @db.Uuid
-  tableId      String?           @map("table_id") @db.Uuid
-  partySize    Int               @map("party_size")
-  startsAt     DateTime          @map("starts_at")
-  endsAt       DateTime          @map("ends_at")
-  status       ReservationStatus @default(PENDING)
-  notes        String?
-  depositPaid  Boolean           @default(false) @map("deposit_paid")
-  depositPaymentId String?       @map("deposit_payment_id") @db.Uuid
-  source       String            @default("web")          // web | agent | meetup
-  reminderSentAt DateTime?       @map("reminder_sent_at")
-  cancelledAt  DateTime?
-  groupReservationId String?     @map("group_reservation_id") @db.Uuid
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id                 String            @id @default(uuid()) @db.Uuid
+  businessId         String            @map("business_id") @db.Uuid
+  userId             String            @map("user_id") @db.Uuid
+  tableId            String?           @map("table_id") @db.Uuid
+  partySize          Int               @map("party_size")
+  startsAt           DateTime          @map("starts_at")
+  endsAt             DateTime          @map("ends_at")
+  status             ReservationStatus @default(PENDING)
+  notes              String?
+  depositPaid        Boolean           @default(false) @map("deposit_paid")
+  depositPaymentId   String?           @map("deposit_payment_id") @db.Uuid
+  source             String            @default("web") // web | agent | meetup
+  reminderSentAt     DateTime?         @map("reminder_sent_at")
+  cancelledAt        DateTime?
+  groupReservationId String?           @map("group_reservation_id") @db.Uuid
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
   @@index([businessId, startsAt])
   @@index([userId, startsAt])
@@ -69,17 +70,28 @@ model Reservation {
 }
 
 model WaitlistEntry {
-  id          String   @id @default(uuid()) @db.Uuid
-  businessId  String   @map("business_id") @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  partySize   Int
-  desiredAt   DateTime @map("desired_at")
-  windowMin   Int      @default(60)
-  status      String   @default("WAITING")           // WAITING | OFFERED | ACCEPTED | EXPIRED
-  offerToken  String?  @unique
+  id             String    @id @default(uuid()) @db.Uuid
+  businessId     String    @map("business_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  partySize      Int
+  desiredAt      DateTime  @map("desired_at")
+  windowMin      Int       @default(60)
+  status         String    @default("WAITING") // WAITING | OFFERED | ACCEPTED | EXPIRED
+  offerToken     String?   @unique
   offerExpiresAt DateTime?
-  createdAt   DateTime @default(now())
+  createdAt      DateTime  @default(now())
 
   @@index([businessId, desiredAt, status])
   @@map("waitlist_entries")
+}
+
+model OutboxEvent {
+  id          String    @id @default(uuid())
+  routingKey  String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  attempts    Int       @default(0)
+
+  @@index([publishedAt, createdAt])
 }

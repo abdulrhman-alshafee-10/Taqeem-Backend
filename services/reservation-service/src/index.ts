@@ -1,3 +1,6 @@
+import { createHealthRouter } from "@taqeem/shared/health/healthRouter.js";
+import { registerGracefulShutdown } from "@taqeem/shared/shutdown/gracefulShutdown.js";
+import http from "node:http";
 import "@taqeem/shared/tracing/tracing.js";
 import express, { Request, Response } from "express";
 import reservationRoutes from "./routes/reservation.routes.js";
@@ -14,7 +17,10 @@ app.use(express.json());
 app.use(httpLogger(process.env.OTEL_SERVICE_NAME ?? "reservation-service"));
 app.use(httpMetricsMiddleware(process.env.OTEL_SERVICE_NAME ?? "reservation-service"));
 
-app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }) });
+
+const healthRouter = createHealthRouter("reservation-service");
+app.use(healthRouter);
+
 
 app.get("/metrics", async (_req: any, res: any) => {
   res.set("Content-Type", register.contentType);
