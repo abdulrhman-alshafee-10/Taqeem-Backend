@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/client-reward"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RewardBalance {
+  userId    String   @id @db.Uuid @map("user_id")
+  points    Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("reward_balances")
+}
+
+model RewardTx {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  points    Int
+  reason    String
+  refId     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("reward_txs")
+}
+
+model Voucher {
+  id           String   @id @default(uuid()) @db.Uuid
+  businessId   String   @map("business_id") @db.Uuid
+  labelEn      String
+  labelAr      String
+  pointsCost   Int
+  discountType String   // PERCENT | FIXED | FREE_ITEM
+  discountValue Decimal @db.Decimal(10,2)
+  stock        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  redemptions  VoucherRedemption[]
+
+  @@index([businessId, isActive])
+  @@map("vouchers")
+}
+
+model VoucherRedemption {
+  id         String   @id @default(uuid()) @db.Uuid
+  voucherId  String   @map("voucher_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  code       String   @unique
+  status     String   @default("ACTIVE") // ACTIVE | USED | EXPIRED
+  redeemedAt DateTime @default(now())
+  usedAt     DateTime?
+
+  voucher    Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("voucher_redemptions")
+}

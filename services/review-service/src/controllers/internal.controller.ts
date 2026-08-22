@@ -65,3 +65,38 @@ export async function rebindReviews(req: Request, res: Response) {
   }
 }
 
+export async function getUserCounts(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    
+    // Aggregate over reviews for this user
+    const result = await Review.aggregate([
+      { $match: { authorId: id, isDeleted: false } },
+      {
+        $group: {
+          _id: null,
+          totalReviews: { $sum: 1 },
+          verifiedVisits: { $sum: { $cond: [{ $eq: ["$verifiedVisit", true] }, 1, 0] } },
+          totalHelpfulVotes: { $sum: "$helpfulVotes" },
+          mediaCount: { $sum: { $cond: [{ $isArray: "$media" }, { $size: "$media" }, 0] } }
+        }
+      }
+    ]);
+    
+    // We could do additional counts (like categories or cities) if we joined with business data
+    // For Phase 18, we can approximate or rely on basic counts for now, or just send what we have.
+    // If the Badge Awarder needs `countReviewsInCategory`, it will need a way to filter by category.
+    // We'll provide standard counts here.
+    
+    if (result.length === 0) {
+      return res.json({ totalReviews: 0, verifiedVisits: 0, totalHelpfulVotes: 0, mediaCount: 0 });
+    }
+    
+    const stats = result[0];
+    delete stats._id;
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+

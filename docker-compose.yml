@@ -409,3 +409,22 @@ services:
         condition: service_healthy
     networks:
       - taqeem_network
+
+  reward-service:
+    build:
+      context: .
+      dockerfile: services/reward-service/Dockerfile
+    container_name: taqeem_reward_service
+    restart: unless-stopped
+    ports:
+      - "4014:4014"
+    environment:
+      PORT: 4014
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taqeem_rewards?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - taqeem_network

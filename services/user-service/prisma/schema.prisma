@@ -27,7 +27,9 @@ model User {
   reputationLevel String   @default("EXPLORER") @map("reputation_level")
   reviewsCount    Int      @default(0) @map("reviews_count")
   helpfulReceived Int      @default(0) @map("helpful_received")
-  badges          String[] @default([])
+  
+  userBadges    UserBadge[]
+  streaks       Streak[]
 
   trackRecentlyViewed Boolean @default(true) @map("track_recently_viewed")
   createdAt     DateTime @default(now()) @map("created_at")
@@ -71,3 +73,50 @@ model RefreshToken {
   @@index([userId])
   @@map("refresh_tokens")
 }
+
+model Badge {
+  key         String   @id
+  labelEn     String
+  labelAr     String
+  descEn      String
+  descAr      String
+  iconUrl     String
+  category    String   // reviewer | explorer | social | owner
+  points      Int      @default(0)
+  isRetired   Boolean  @default(false)
+
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  userId    String   @map("user_id") @db.Uuid
+  badgeKey  String   @map("badge_key")
+  awardedAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeKey], references: [key], onDelete: Cascade)
+
+  @@id([userId, badgeKey])
+  @@index([userId, awardedAt])
+}
+
+enum StreakKind {
+  REVIEWER
+  CHECKIN
+  HELPFUL
+}
+
+model Streak {
+  userId         String       @map("user_id") @db.Uuid
+  kind           StreakKind
+  currentWeeks   Int          @default(0)
+  bestWeeks      Int          @default(0)
+  lastActiveWeek String       // e.g. "2026-33"
+  updatedAt      DateTime     @updatedAt
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, kind])
+}
+
+
