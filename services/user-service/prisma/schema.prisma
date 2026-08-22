@@ -22,7 +22,7 @@ model User {
   avatarUrl     String?  @map("avatar_url")
   bio           String?
   isVerified    Boolean  @default(false) @map("is_verified")
-  
+  locale        String   @default("ar-EG")  
   reputationScore Int      @default(0) @map("reputation_score")
   reputationLevel String   @default("EXPLORER") @map("reputation_level")
   reviewsCount    Int      @default(0) @map("reviews_count")

@@ -3,6 +3,8 @@ export function buildSearchQuery(params: any) {
     q, lat, lng, radiusKm = 10,
     categories = [], priceTier = [],
     minRating, city,
+    halalTier = [], hasFamilySection, femaleFriendly = [],
+    lang = "ar",
     sort = "relevance",
     page = 1, size = 20,
   } = params;
@@ -13,6 +15,11 @@ export function buildSearchQuery(params: any) {
 
   if (categories.length) filter.push({ terms: { categories } });
   if (priceTier.length)  filter.push({ terms: { priceTier } });
+  if (halalTier.length)  filter.push({ terms: { halalTier } });
+  if (femaleFriendly.length) filter.push({ terms: { femaleFriendly } });
+  if (hasFamilySection === "true" || hasFamilySection === true) {
+    filter.push({ term: { hasFamilySection: true } });
+  }
   if (city)              filter.push({ term:  { city } });
   if (typeof minRating === "number") filter.push({ range: { avgRating: { gte: minRating } } });
 
@@ -52,14 +59,16 @@ export function buildSearchQuery(params: any) {
   const must: any[]   = [];
 
   if (q && q.trim()) {
+    const boost = lang.startsWith("ar")
+      ? { nameAr: 6, nameEn: 4, descriptionAr: 2, descriptionEn: 1 }
+      : { nameEn: 6, nameAr: 4, descriptionEn: 2, descriptionAr: 1 };
+      
     must.push({
       multi_match: {
         query: q,
         type:  "best_fields",
         fields: [
-          "name^5",
-          "name.autocomplete^3",
-          "description^2",
+          ...Object.entries(boost).map(([f, b]) => `${f}^${b}`),
           "categories^3",
           "city",
         ],
@@ -110,16 +119,20 @@ export function buildSearchQuery(params: any) {
     size,
     query: functionScore,
     _source: [
-      "id","name","slug","description","categories","priceTier",
+      "id","nameEn","nameAr","slug","descriptionEn","descriptionAr","categories","priceTier",
       "city","region","country","location","avgRating","reviewCount","photos",
-      "aspects","features","dietary","atmosphere","paymentMethods"
+      "aspects","features","dietary","atmosphere","paymentMethods",
+      "halalTier","servesAlcohol","servesPork","closesDuringPrayers","prayerCloseMinutes",
+      "hasFamilySection","hasFamilyOnlyHours","femaleFriendly"
     ],
     aggs: {
       features:   { terms: { field: "features",   size: 30 } },
       dietary:    { terms: { field: "dietary",    size: 15 } },
       atmosphere: { terms: { field: "atmosphere", size: 10 } },
       priceTier:  { terms: { field: "priceTier",  size: 4  } },
-      city:       { terms: { field: "city",       size: 20 } }
+      city:       { terms: { field: "city",       size: 20 } },
+      halalTier:  { terms: { field: "halalTier",  size: 4  } },
+      femaleFriendly: { terms: { field: "femaleFriendly", size: 4 } }
     }
   };
 

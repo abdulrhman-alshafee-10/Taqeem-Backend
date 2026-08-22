@@ -80,8 +80,10 @@ export async function addItem(req: Request, res: Response) {
   const item = await prisma.menuItem.create({
     data: {
       sectionId,
-      name: data.name,
-      description: data.description,
+      nameEn: data.nameEn || data.name,
+      nameAr: data.nameAr,
+      descriptionEn: data.descriptionEn || data.description,
+      descriptionAr: data.descriptionAr,
       basePrice: data.basePrice,
       photoUrl: data.photoUrl,
       isAvailable: data.isAvailable !== undefined ? data.isAvailable : true,
@@ -120,8 +122,10 @@ export async function updateItem(req: Request, res: Response) {
   const item = await prisma.menuItem.update({
     where: { id: itemId },
     data: {
-      name: data.name,
-      description: data.description,
+      nameEn: data.nameEn || data.name,
+      nameAr: data.nameAr,
+      descriptionEn: data.descriptionEn || data.description,
+      descriptionAr: data.descriptionAr,
       basePrice: data.basePrice,
       photoUrl: data.photoUrl,
       isAvailable: data.isAvailable,
@@ -215,8 +219,10 @@ export async function importOcrConfirm(req: Request, res: Response) {
           const it = await tx.menuItem.create({
             data: {
               sectionId: sec.id,
-              name: item.name,
-              description: item.description,
+              nameEn: item.nameEn || item.name,
+              nameAr: item.nameAr,
+              descriptionEn: item.descriptionEn || item.description,
+              descriptionAr: item.descriptionAr,
               basePrice: item.basePrice,
               dietary: item.dietary,
               position: j,

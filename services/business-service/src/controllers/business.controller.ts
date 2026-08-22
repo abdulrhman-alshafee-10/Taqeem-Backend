@@ -3,7 +3,10 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { publishEvent } from "../events/publisher.js";
 import { getUserContext } from "@taqeem/shared/auth/context.js";
+import { localizeEntity } from "@taqeem/shared/middlewares/localize.js";
+import { getPrayerTimes } from "../services/prayer.js";
 import crypto from "node:crypto";
+import axios from "axios";
 
 const prisma = new PrismaClient();
 
@@ -22,7 +25,8 @@ export async function list(req: Request, res: Response) {
     orderBy: { createdAt: "desc" },
   });
   const nextCursor = items.length > limit ? items.pop()!.id : null;
-  res.json({ items, nextCursor });
+  const lang = (req as any).lang || "ar";
+  res.json({ items: items.map(i => localizeEntity(i, lang)), nextCursor });
 }
 
 export async function getById(req: Request, res: Response) {
@@ -32,6 +36,33 @@ export async function getById(req: Request, res: Response) {
   });
   if (!biz || !biz.isActive) return res.status(404).json({ error: "Not found" });
 
+  let isOpenNow = true;
+  try {
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const prayers = await getPrayerTimes(biz.city, biz.country, today);
+    if (prayers && biz.closesDuringPrayers?.length) {
+      const now = new Date();
+      for (const p of biz.closesDuringPrayers) {
+        const t = prayers[p];
+        if (!t) continue;
+        const [h, m] = t.split(":").map(Number);
+        const start = new Date(now);
+        start.setHours(h, m, 0, 0);
+        const end = new Date(start.getTime() + (biz.prayerCloseMinutes || 20) * 60_000);
+        if (now >= start && now < end) {
+          isOpenNow = false;
+          break;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Prayer time error:", err);
+  }
+
+  const lang = (req as any).lang || "ar";
+  const localizedBiz = localizeEntity(biz, lang);
+  localizedBiz.isOpenNow = isOpenNow;
+
   const ctx = getUserContext(req);
   await publishEvent("business.viewed", {
     id: crypto.randomUUID(),
@@ -40,7 +71,7 @@ export async function getById(req: Request, res: Response) {
     at: new Date().toISOString(),
   });
 
-  res.json(biz);
+  res.json(localizedBiz);
 }
 
 export async function create(req: Request, res: Response) {
@@ -105,7 +136,34 @@ export async function getSummary(req: Request, res: Response) {
   res.json(summary);
 }
 
-import axios from "axios";
+export async function confirmHalal(req: Request, res: Response) {
+  const ctx = getUserContext(req);
+  
+  try {
+    const userSvcUrl = process.env.USER_SERVICE_URL || "http://user-service:4001";
+    const trustReq = await axios.get(`${userSvcUrl}/internal/users/${ctx.id}`);
+    const trust = trustReq.data;
+    
+    if (trust.reviewsCount < 10 && !trust.reputationLevel?.includes("GUIDE")) {
+      return res.status(403).json({ error: "Not enough reputation yet to confirm Halal" });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to verify user trust" });
+  }
+
+  const businessId = req.params.id;
+  await prisma.halalConfirmation.upsert({
+    where:  { businessId_userId: { businessId, userId: ctx.id as string } },
+    create: { businessId, userId: ctx.id as string, photoUrl: req.body.photoUrl },
+    update: { photoUrl: req.body.photoUrl },
+  });
+
+  const count = await prisma.halalConfirmation.count({ where: { businessId } });
+  if (count >= 5) {
+    await publishEvent("business.halal_community_ready", { businessId });
+  }
+  res.json({ confirmations: count });
+}
 
 export async function askBusiness(req: Request, res: Response) {
   try {

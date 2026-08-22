@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client-payment";
 import { stripe } from "../services/stripe.js";
 import { withIdempotency } from "../middleware/idempotency.js";
+import { fawryAdapter } from "../adapters/fawry.js";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +11,7 @@ export async function createIntent(req: Request, res: Response) {
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
   const key = req.header("Idempotency-Key") as string;
-  const { purpose, entity, entityId, amount, currency = "EGP", metadata = {} } = req.body;
+  const { purpose, entity, entityId, amount, currency = "EGP", metadata = {}, provider = "STRIPE" } = req.body;
 
   const { status, body } = await withIdempotency(key, async () => {
     const payment = await prisma.payment.create({
@@ -22,12 +23,26 @@ export async function createIntent(req: Request, res: Response) {
         entityId,
         amount,
         currency,
-        provider: "STRIPE",
+        provider,
         idempotencyKey: key,
         metadata,
       },
     });
 
+    if (provider === "FAWRY") {
+      const result = await fawryAdapter.createIntent({
+        paymentId: payment.id,
+        amount, currency, userId,
+        buyer: metadata.buyer || {},
+      });
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { providerRef: result.providerRef },
+      });
+      return { status: 201, body: { paymentId: payment.id, ...result.payload } };
+    }
+
+    // Default: Stripe
     const pi = await stripe.paymentIntents.create(
       {
         amount: toStripeAmount(amount, currency),

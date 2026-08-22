@@ -36,12 +36,21 @@ enum PriceTier {
   FOUR    // $$$$
 }
 
+enum HalalTier {
+  NONE
+  SELF_DECLARED
+  COMMUNITY_VERIFIED
+  CERTIFIED
+}
+
 model Business {
   id            String       @id @default(uuid()) @db.Uuid
   ownerId       String?      @map("owner_id") @db.Uuid   // soft FK to User.id
-  name          String
+  nameEn        String       @map("name_en")
+  nameAr        String?      @map("name_ar")
   slug          String       @unique
-  description   String?
+  descriptionEn String?      @map("description_en")
+  descriptionAr String?      @map("description_ar")
   categories    String[]     @default([])
   priceTier     PriceTier?   @map("price_tier")
   phone         String?
@@ -52,6 +61,19 @@ model Business {
   dietary          String[] @default([])                @map("dietary")
   atmosphere       String[] @default([])                @map("atmosphere")
   paymentMethods   String[] @default([])                @map("payment_methods")
+
+  halalTier          HalalTier @default(NONE) @map("halal_tier")
+  halalCertBody      String?   @map("halal_cert_body")
+  halalCertNumber    String?   @map("halal_cert_number")
+  halalNotes         String?   @map("halal_notes")
+  servesAlcohol      Boolean   @default(false) @map("serves_alcohol")
+  servesPork         Boolean   @default(false) @map("serves_pork")
+  closesDuringPrayers String[] @default([]) @map("closes_during_prayers")
+  prayerCloseMinutes  Int?     @default(20) @map("prayer_close_minutes")
+  hasFamilySection    Boolean  @default(false) @map("has_family_section")
+  hasFamilyOnlyHours  Boolean  @default(false) @map("has_family_only_hours")
+  femaleFriendly      String   @default("UNKNOWN") @map("female_friendly")
+  deliveryLinks       Json?    @default("{}") @map("delivery_links")
 
   // Location
   addressLine1  String       @map("address_line_1")
@@ -170,8 +192,10 @@ model MenuSection {
 model MenuItem {
   id            String        @id @default(uuid()) @db.Uuid
   sectionId     String        @map("section_id") @db.Uuid
-  name          String
-  description   String?
+  nameEn        String        @map("name_en")
+  nameAr        String?       @map("name_ar")
+  descriptionEn String?       @map("description_en")
+  descriptionAr String?       @map("description_ar")
   basePrice     Decimal       @db.Decimal(10,2) @map("base_price")
   photoUrl      String?       @map("photo_url")
   isAvailable   Boolean       @default(true)
@@ -360,3 +384,33 @@ model DealRedemption {
   @@index([userId, dealId])
 }
 
+model RamadanSchedule {
+  businessId   String   @id @db.Uuid @map("business_id")
+  iftarOpen    String                        // "17:30" (relative — or "AT_MAGHRIB")
+  iftarClose   String                        // "23:59"
+  suhoorOpen   String?                       // "00:30"
+  suhoorClose  String?                       // "04:00" (relative — or "AT_FAJR")
+  dayClosed    Boolean  @default(true)       // closed all day outside iftar/suhoor windows
+  isActive     Boolean  @default(true)
+}
+
+model HalalConfirmation {
+  businessId   String   @map("business_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  photoUrl     String?  @map("photo_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@id([businessId, userId])
+}
+
+model DeliveryLink {
+  id         String   @id @default(uuid()) @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  provider   String                                    // "talabat" | "otlob" | ...
+  externalId String   @map("external_id")
+  status     String                                    // "PENDING" | "ACTIVE" | "REVOKED"
+  authRef    String?                                   // opaque token/customerId
+  createdAt  DateTime @default(now())
+
+  @@unique([businessId, provider])
+}
