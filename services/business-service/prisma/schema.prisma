@@ -7,6 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SeniorityTier {
+  NEW
+  ESTABLISHED
+  VETERAN
+  LEGACY
+}
+
+enum QualityTier {
+  UNRATED
+  RISING
+  POPULAR
+  ACCLAIMED
+  HALL_OF_FAME
+}
+
+enum EngagementTier {
+  UNCLAIMED
+  CLAIMED
+  ACTIVE_OWNER
+  PRO
+}
+
 enum ClaimStatus {
   UNCLAIMED
   PENDING
@@ -89,18 +111,18 @@ model Business {
   longitude     Float
 
   // Denormalized aggregates (updated by event consumer)
-  avgRating     Float        @default(0)  @map("avg_rating")
-  reviewCount   Int          @default(0)  @map("review_count")
-  aspectAvgFood        Float  @default(0) @map("aspect_avg_food")
-  aspectAvgService     Float  @default(0) @map("aspect_avg_service")
-  aspectAvgAmbience    Float  @default(0) @map("aspect_avg_ambience")
-  aspectAvgValue       Float  @default(0) @map("aspect_avg_value")
-  aspectAvgCleanliness Float  @default(0) @map("aspect_avg_cleanliness")
-  aspectCountFood      Int    @default(0) @map("aspect_count_food")
-  aspectCountService   Int    @default(0) @map("aspect_count_service")
-  aspectCountAmbience  Int    @default(0) @map("aspect_count_ambience")
-  aspectCountValue     Int    @default(0) @map("aspect_count_value")
-  aspectCountCleanliness Int  @default(0) @map("aspect_count_cleanliness")
+  // Rating Aggregates
+  ratingCount    Int           @default(0) @map("rating_count")
+  ratingAvg      Float         @default(0.0) @map("rating_avg")
+  aspectAvgs     Json          @default("{}") @map("aspect_avgs")
+  aspectCounts   Json          @default("{}") @map("aspect_counts")
+  verifiedReviewCount Int      @default(0) @map("verified_review_count")
+
+  // Tiers
+  seniorityTier  SeniorityTier  @default(NEW)        @map("seniority_tier")
+  qualityTier    QualityTier    @default(UNRATED)    @map("quality_tier")
+  engagementTier EngagementTier @default(UNCLAIMED)  @map("engagement_tier")
+  levelUpdatedAt DateTime?      @map("level_updated_at")
 
   // Claim
   claimStatus   ClaimStatus  @default(UNCLAIMED) @map("claim_status")
@@ -110,6 +132,7 @@ model Business {
   members       BusinessMember[]
   summary       BusinessSummary?
   summaryHistory BusinessSummaryHistory[]
+  badges        BusinessBadge[]
 
   groupId       String?        @map("group_id") @db.Uuid
   group         BusinessGroup? @relation(fields: [groupId], references: [id])
@@ -119,11 +142,17 @@ model Business {
   businessStatus BusinessStatus @default(OPEN) @map("business_status")
   closedAt       DateTime? @map("closed_at")
   mergedIntoId   String?   @map("merged_into_id") @db.Uuid
+  vertical       String        @default("FOOD_DRINK")
+  subVertical    String?       @default("RESTAURANT")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt      @map("updated_at")
 
   @@index([ownerId])
   @@index([groupId])
+  @@index([vertical])
+  @@index([subVertical])
+  @@index([qualityTier])
+  @@index([seniorityTier])
   @@index([city, region, country])
   @@index([categories], type: Gin)
   @@index([features],       type: Gin)
@@ -432,4 +461,29 @@ model AccessibilityConfirmation {
   @@unique([businessId, userId, path])
   @@index([businessId, path])
   @@map("accessibility_confirmations")
+}
+
+model BusinessBadgeDef {
+  key         String   @id
+  labelEn     String
+  labelAr     String
+  descEn      String?
+  descAr      String?
+  iconUrl     String?
+  category    String                     // seniority | milestone | quality | community | award
+  scope       String                     // "*"| "FOOD_DRINK" | "CULTURE" | ...
+  isRetired   Boolean  @default(false)
+}
+
+model BusinessBadge {
+  id         String   @id @default(uuid()) @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  badgeKey   String   @map("badge_key")
+  awardedAt  DateTime @default(now())
+  metadata   Json?                        // e.g. { "year": 2026, "city": "Cairo", "vertical": "FOOD_DRINK" }
+
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, badgeKey])
+  @@index([badgeKey, awardedAt])
 }

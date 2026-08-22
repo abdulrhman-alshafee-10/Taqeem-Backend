@@ -22,16 +22,7 @@ const MediaSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const AspectsSchema = new mongoose.Schema(
-  {
-    food:        { type: Number, min: 1, max: 5 },
-    service:     { type: Number, min: 1, max: 5 },
-    ambience:    { type: Number, min: 1, max: 5 },
-    value:       { type: Number, min: 1, max: 5 },
-    cleanliness: { type: Number, min: 1, max: 5 },
-  },
-  { _id: false }
-);
+
 
 const VerificationSchema = new mongoose.Schema(
   {
@@ -72,7 +63,7 @@ const ReviewSchema = new mongoose.Schema(
     authorId:   { type: String, required: true, index: true },
     authorName: { type: String, required: true },
     rating:     { type: Number, required: true, min: 1, max: 5 },
-    aspects:    { type: AspectsSchema, default: null },
+    aspects:    { type: Map, of: Number, default: undefined },
     title:      { type: String, maxlength: 140 },
     body:       { type: String, required: true, minlength: 10, maxlength: 5000 },
     
@@ -103,7 +94,7 @@ const ReviewSchema = new mongoose.Schema(
     threadClosed: { type: Boolean, default: false },
 
     // Phase 13.2: AI Aspect Sentiment
-    inferredAspects: { type: AspectsSchema, default: null },
+    inferredAspects: { type: Map, of: Number, default: undefined },
 
     // Moderation
     isFlagged:  { type: Boolean, default: false, index: true },

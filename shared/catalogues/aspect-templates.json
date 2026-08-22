@@ -1,0 +1,108 @@
+{
+  "FOOD_DRINK": {
+    "aspects": [
+      { "key": "food",        "labelEn": "Food",        "labelAr": "الأكل" },
+      { "key": "service",     "labelEn": "Service",     "labelAr": "الخدمة" },
+      { "key": "ambience",    "labelEn": "Ambience",    "labelAr": "الأجواء" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" },
+      { "key": "cleanliness", "labelEn": "Cleanliness", "labelAr": "النظافة" }
+    ]
+  },
+  "BEAUTY_WELLNESS": {
+    "aspects": [
+      { "key": "skill",       "labelEn": "Skill",       "labelAr": "المهارة" },
+      { "key": "hygiene",     "labelEn": "Hygiene",     "labelAr": "النظافة" },
+      { "key": "service",     "labelEn": "Service",     "labelAr": "الخدمة" },
+      { "key": "ambience",    "labelEn": "Ambience",    "labelAr": "الأجواء" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" }
+    ]
+  },
+  "FITNESS": {
+    "aspects": [
+      { "key": "equipment",   "labelEn": "Equipment",   "labelAr": "الأجهزة" },
+      { "key": "cleanliness", "labelEn": "Cleanliness", "labelAr": "النظافة" },
+      { "key": "staff",       "labelEn": "Staff",       "labelAr": "المدربون" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" }
+    ]
+  },
+  "HOSPITALITY": {
+    "aspects": [
+      { "key": "room",        "labelEn": "Room",        "labelAr": "الغرفة" },
+      { "key": "cleanliness", "labelEn": "Cleanliness", "labelAr": "النظافة" },
+      { "key": "service",     "labelEn": "Service",     "labelAr": "الخدمة" },
+      { "key": "location",    "labelEn": "Location",    "labelAr": "الموقع" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" }
+    ]
+  },
+  "HEALTH": {
+    "aspects": [
+      { "key": "professionalism", "labelEn": "Professionalism", "labelAr": "الاحترافية" },
+      { "key": "wait_time",       "labelEn": "Wait time",       "labelAr": "وقت الانتظار" },
+      { "key": "cleanliness",     "labelEn": "Cleanliness",     "labelAr": "النظافة" },
+      { "key": "communication",   "labelEn": "Communication",   "labelAr": "التواصل" },
+      { "key": "value",           "labelEn": "Value",           "labelAr": "السعر" }
+    ]
+  },
+  "RETAIL": {
+    "aspects": [
+      { "key": "selection",   "labelEn": "Selection",   "labelAr": "التشكيلة" },
+      { "key": "staff",       "labelEn": "Staff",       "labelAr": "الطاقم" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" },
+      { "key": "ambience",    "labelEn": "Store vibe",  "labelAr": "المحل" }
+    ]
+  },
+  "CULTURE": {
+    "aspects": [
+      { "key": "curation",    "labelEn": "Curation",    "labelAr": "المحتوى" },
+      { "key": "staff",       "labelEn": "Staff",       "labelAr": "الطاقم" },
+      { "key": "ambience",    "labelEn": "Ambience",    "labelAr": "الأجواء" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" }
+    ]
+  },
+  "OUTDOORS": {
+    "aspects": [
+      { "key": "cleanliness", "labelEn": "Cleanliness", "labelAr": "النظافة" },
+      { "key": "safety",      "labelEn": "Safety",      "labelAr": "الأمان" },
+      { "key": "facilities",  "labelEn": "Facilities",  "labelAr": "المرافق" }
+    ]
+  },
+  "ENTERTAINMENT": {
+    "aspects": [
+      { "key": "experience",  "labelEn": "Experience",  "labelAr": "التجربة" },
+      { "key": "staff",       "labelEn": "Staff",       "labelAr": "الطاقم" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" },
+      { "key": "cleanliness", "labelEn": "Cleanliness", "labelAr": "النظافة" }
+    ]
+  },
+  "SERVICES": {
+    "aspects": [
+      { "key": "quality",     "labelEn": "Quality",     "labelAr": "الجودة" },
+      { "key": "speed",       "labelEn": "Speed",       "labelAr": "السرعة" },
+      { "key": "communication","labelEn":"Communication","labelAr":"التواصل" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" }
+    ]
+  },
+  "EDUCATION": {
+    "aspects": [
+      { "key": "teaching",    "labelEn": "Teaching",    "labelAr": "التدريس" },
+      { "key": "materials",   "labelEn": "Materials",   "labelAr": "المواد" },
+      { "key": "environment", "labelEn": "Environment", "labelAr": "البيئة" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" }
+    ]
+  },
+  "AUTO": {
+    "aspects": [
+      { "key": "workmanship", "labelEn": "Workmanship", "labelAr": "الصنعة" },
+      { "key": "honesty",     "labelEn": "Honesty",     "labelAr": "الأمانة" },
+      { "key": "speed",       "labelEn": "Speed",       "labelAr": "السرعة" },
+      { "key": "value",       "labelEn": "Value",       "labelAr": "السعر" }
+    ]
+  },
+  "RELIGIOUS": {
+    "aspects": [
+      { "key": "cleanliness", "labelEn": "Cleanliness", "labelAr": "النظافة" },
+      { "key": "atmosphere",  "labelEn": "Atmosphere",  "labelAr": "الأجواء" },
+      { "key": "accessibility","labelEn": "Accessibility","labelAr":"سهولة الوصول" }
+    ]
+  }
+}

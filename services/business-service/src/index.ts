@@ -27,9 +27,12 @@ app.use("/api/businesses/:businessId/deals", dealRoutes);
 
 const PORT = process.env.PORT || 4002;
 
+import { startBadgeConsumers } from "./workers/business-badge-awarder.js";
+
 export async function start() {
   await initPublisher();
   await initConsumer();
+  await startBadgeConsumers();
   app.listen(PORT, () => {
     console.log(`business-service listening on port ${PORT}`);
   });

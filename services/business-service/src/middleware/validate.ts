@@ -1,9 +1,23 @@
 import { z } from "zod";
 import { Request, Response, NextFunction } from "express";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const verticalsPath = path.resolve(__dirname, "../../../../shared/catalogues/verticals.json");
+const catalogue = JSON.parse(fs.readFileSync(verticalsPath, "utf-8"));
+
+const VERTICAL_KEYS = catalogue.verticals.map((v: any) => v.key) as [string, ...string[]];
+const SUBVERTICAL_KEYS = new Set(catalogue.verticals.flatMap((v: any) => v.sub || []));
 
 export const CreateBusinessSchema = z.object({
-  name: z.string().min(2).max(120),
-  description: z.string().max(2000).optional(),
+  vertical: z.enum(VERTICAL_KEYS),
+  subVertical: z.string().optional().refine(v => v == null || SUBVERTICAL_KEYS.has(v)),
+  nameEn: z.string().min(2).max(120),
+  nameAr: z.string().min(2).max(120).optional(),
+  descriptionEn: z.string().max(2000).optional(),
+  descriptionAr: z.string().max(2000).optional(),
   categories: z.array(z.string()).min(1).max(10),
   priceTier: z.enum(["ONE","TWO","THREE","FOUR"]).optional(),
   phone: z.string().max(30).optional(),

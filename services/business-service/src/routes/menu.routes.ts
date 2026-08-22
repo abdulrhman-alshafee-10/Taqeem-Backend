@@ -4,14 +4,15 @@ import {
   addItem, updateItem, reorderMenu, importOcr, importOcrConfirm
 } from "../controllers/menu.controller.js";
 import { requireBusinessPermission } from "../middleware/permissions.js";
+import { requireFeature } from "../middleware/features.js";
 
 const router = Router();
 
 // Public read
-router.get("/businesses/:id/menu", getMenu);
+router.get("/businesses/:id/menu", requireFeature("menu"), getMenu);
 
 // Owner write
-router.post("/owner/businesses/:id/menu", requireBusinessPermission("editProfile"), createMenu);
+router.post("/owner/businesses/:id/menu", requireBusinessPermission("editProfile"), requireFeature("menu"), createMenu);
 router.put("/owner/menus/:menuId", requireBusinessPermission("editProfile"), updateMenuMetadata);
 router.post("/owner/menus/:menuId/sections", requireBusinessPermission("editProfile"), addSection);
 router.post("/owner/sections/:sectionId/items", requireBusinessPermission("editProfile"), addItem);

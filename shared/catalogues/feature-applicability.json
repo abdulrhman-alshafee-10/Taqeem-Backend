@@ -1,0 +1,22 @@
+{
+  "menu":               ["FOOD_DRINK"],
+  "orders_pickup":      ["FOOD_DRINK"],
+  "delivery_partners":  ["FOOD_DRINK"],
+  "menu_ocr":           ["FOOD_DRINK"],
+  "verified_visit_order": ["FOOD_DRINK"],
+  "halal_flags":        ["FOOD_DRINK","HOSPITALITY"],
+  "prayer_break_hours": ["FOOD_DRINK","BEAUTY_WELLNESS","HEALTH","RETAIL","SERVICES","AUTO"],
+  "reservations_tables":["FOOD_DRINK","ENTERTAINMENT"],
+  "appointments":       ["BEAUTY_WELLNESS","HEALTH","FITNESS","SERVICES","AUTO","EDUCATION"],
+  "bookings_rooms":     ["HOSPITALITY"],
+  "class_sessions":     ["FITNESS","EDUCATION"],
+  "female_sections":    ["FOOD_DRINK","HOSPITALITY","BEAUTY_WELLNESS","FITNESS"],
+  "deals_bogo":         ["FOOD_DRINK"],
+  "deals_free_item":    ["FOOD_DRINK","RETAIL"],
+  "deals_percent_off":  ["*"],
+  "gift_cards":         ["*"],
+  "coupons":            ["*"],
+  "shorts":             ["*"],
+  "checkins":           ["*"],
+  "tips":               ["*"]
+}

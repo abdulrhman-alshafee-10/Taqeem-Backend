@@ -63,6 +63,20 @@ export async function getById(req: Request, res: Response) {
   const localizedBiz = localizeEntity(biz, lang);
   localizedBiz.isOpenNow = isOpenNow;
 
+  let aspectsTemplate = [];
+  try {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const templatesPath = path.resolve(__dirname, "../../../../shared/catalogues/aspect-templates.json");
+    const templates = JSON.parse(fs.readFileSync(templatesPath, "utf-8"));
+    aspectsTemplate = templates[biz.vertical]?.aspects || [];
+  } catch (err) {
+    console.error("Failed to load aspects template", err);
+  }
+  localizedBiz.aspectsTemplate = aspectsTemplate;
+
   const ctx = getUserContext(req);
   await publishEvent("business.viewed", {
     id: crypto.randomUUID(),
@@ -76,10 +90,18 @@ export async function getById(req: Request, res: Response) {
 
 export async function create(req: Request, res: Response) {
   const ctx = getUserContext(req);
+  if (!ctx || (ctx.role !== "OWNER" && ctx.role !== "ADMIN")) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
   const data = req.body;
-  const slug = `${slugify(data.name, { lower: true })}-${crypto.randomUUID().slice(0, 6)}`;
+  const slug = `${slugify(data.nameEn, { lower: true })}-${crypto.randomUUID().slice(0, 6)}`;
   const biz = await prisma.business.create({
-    data: { ...data, slug, ownerId: ctx.isOwner || ctx.isAdmin ? ctx.id : null },
+    data: {
+      ...req.body,
+      slug,
+      ownerId: ctx.id
+    },
   });
   await publishEvent("business.created", { id: crypto.randomUUID(), business: biz });
   res.status(201).json(biz);
@@ -197,4 +219,35 @@ export async function getBusinessInternal(req: Request, res: Response) {
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
+}
+import { wilsonLower, headlineLevel } from "../utils/tier-calc.js";
+
+export async function getLevel(req: Request, res: Response) {
+  const biz = await prisma.business.findUnique({
+    where: { id: req.params.id },
+  });
+  if (!biz) return res.status(404).json({ error: "Not found" });
+
+  const wl = wilsonLower(biz.ratingAvg, biz.ratingCount);
+  const vr = biz.ratingCount === 0 ? 0 : biz.verifiedReviewCount / biz.ratingCount;
+
+  res.json({
+    seniorityTier: biz.seniorityTier,
+    qualityTier: biz.qualityTier,
+    engagementTier: biz.engagementTier,
+    headlineLevel: headlineLevel(biz),
+    since: biz.createdAt.toISOString(),
+    reviewCount: biz.ratingCount,
+    avgRating: biz.ratingAvg,
+    wilsonLower: parseFloat(wl.toFixed(2)),
+    verifiedRatio: parseFloat(vr.toFixed(2))
+  });
+}
+
+export async function getBadges(req: Request, res: Response) {
+  const badges = await prisma.businessBadge.findMany({
+    where: { businessId: req.params.id },
+    orderBy: { awardedAt: 'desc' }
+  });
+  res.json(badges);
 }

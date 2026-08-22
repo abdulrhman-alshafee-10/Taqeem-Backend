@@ -1,0 +1,29 @@
+[
+  { "key": "since_taqeem_1y",     "labelEn": "1 Year on Taqeem",     "labelAr": "سنة على تقييم",   "category": "seniority",   "scope": "*" },
+  { "key": "since_taqeem_3y",     "labelEn": "3 Years on Taqeem",    "labelAr": "٣ سنوات على تقييم","category": "seniority",   "scope": "*" },
+  { "key": "since_taqeem_5y",     "labelEn": "5 Years on Taqeem",    "labelAr": "٥ سنوات",         "category": "seniority",   "scope": "*" },
+  { "key": "since_taqeem_10y",    "labelEn": "10 Years on Taqeem",   "labelAr": "١٠ سنوات",        "category": "seniority",   "scope": "*" },
+  { "key": "historic_verified",   "labelEn": "Since {{year}}",       "labelAr": "منذ {{year}}",    "category": "seniority",   "scope": "*" },
+
+  { "key": "milestone_50_reviews",  "labelEn": "50 Reviews",          "labelAr": "٥٠ تقييم",  "category": "milestone", "scope": "*" },
+  { "key": "milestone_200_reviews", "labelEn": "200 Reviews",         "labelAr": "٢٠٠ تقييم", "category": "milestone", "scope": "*" },
+  { "key": "milestone_1000_reviews","labelEn": "1000 Reviews",        "labelAr": "١٠٠٠ تقييم","category": "milestone", "scope": "*" },
+  { "key": "milestone_10000_reviews","labelEn":"10K Reviews",         "labelAr": "١٠ آلاف تقييم","category":"milestone", "scope": "*" },
+  { "key": "milestone_first_100_photos","labelEn":"100 Photos",       "labelAr": "١٠٠ صورة",  "category":"milestone", "scope": "*" },
+
+  { "key": "quality_45plus_100",  "labelEn": "4.5★ with 100+ reviews","labelAr": "٤٫٥★ فوق ١٠٠", "category": "quality", "scope": "*" },
+  { "key": "quality_hall_of_fame","labelEn": "Hall of Fame",          "labelAr": "قاعة المشاهير","category": "quality", "scope": "*" },
+  { "key": "quality_consistent",  "labelEn": "Consistently 5-star",   "labelAr": "خمس نجوم متواصلة","category": "quality","scope": "*" },
+  { "key": "quality_most_improved","labelEn": "Most Improved",        "labelAr": "الأكثر تطوراً","category": "quality", "scope": "*" },
+
+  { "key": "community_favorite",  "labelEn": "Community Favorite",    "labelAr": "المفضل مجتمعياً","category":"community","scope": "*" },
+  { "key": "loved_by_locals",     "labelEn": "Loved by Locals",       "labelAr": "محبوب محلياً","category": "community","scope": "*" },
+  { "key": "photographers_delight","labelEn":"Photographer's Delight","labelAr": "بلد المصورين","category": "community", "scope": "*" },
+  { "key": "rising_star",         "labelEn": "Rising Star",           "labelAr": "نجم صاعد",   "category": "community", "scope": "*" },
+
+  { "key": "owner_pro",           "labelEn": "Verified Pro",          "labelAr": "برو موثّق",   "category": "quality",   "scope": "*" },
+  { "key": "halal_certified",     "labelEn": "Halal Certified",       "labelAr": "حلال معتمد",  "category": "quality",   "scope": "FOOD_DRINK,HOSPITALITY" },
+
+  { "key": "award_best_of_year",  "labelEn": "Best of {{year}} — {{vertical}} in {{city}}",
+                                   "labelAr": "الأفضل {{year}} — {{vertical}} في {{city}}", "category": "award", "scope": "*" }
+]

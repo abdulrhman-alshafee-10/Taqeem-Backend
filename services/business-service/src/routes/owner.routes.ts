@@ -9,10 +9,12 @@ const r = Router();
 r.use(requireAuth as any, requireRole("OWNER", "ADMIN") as any);
 
 import { toggleReservations } from "../controllers/business.controller.js";
+import { getOwnerBadges } from "../controllers/owner.controller.js";
 
 r.get("/businesses",                              myBusinesses);
 r.put("/businesses/:businessId",                  requireBusinessOwner as any, validate(PatchBusinessSchema), updateMyBusiness);
 r.patch("/businesses/:id/reservations/toggle",    requireBusinessOwner as any, toggleReservations);
+r.get("/businesses/:id/badges",                   requireBusinessOwner as any, getOwnerBadges);
 
 import { updateAccessibility } from "../controllers/accessibility.controller.js";
 r.patch("/businesses/:id/accessibility",          requireBusinessOwner as any, updateAccessibility);

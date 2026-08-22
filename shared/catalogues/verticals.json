@@ -1,0 +1,56 @@
+{
+  "verticals": [
+    {
+      "key": "FOOD_DRINK", "labelEn": "Food & Drink", "labelAr": "طعام ومشروبات",
+      "sub": ["RESTAURANT","CAFE","BAKERY","BAR","FAST_FOOD","FOOD_TRUCK","JUICE_BAR","DESSERT_SHOP","SWEETS_SHOP","ICE_CREAM"]
+    },
+    {
+      "key": "BEAUTY_WELLNESS", "labelEn": "Beauty & Wellness", "labelAr": "الجمال والعناية",
+      "sub": ["SALON","BARBERSHOP","SPA","NAIL_SALON","MASSAGE","TATTOO","WAX_STUDIO","BROW_LASH"]
+    },
+    {
+      "key": "FITNESS", "labelEn": "Fitness", "labelAr": "لياقة",
+      "sub": ["GYM","YOGA_STUDIO","PILATES","MARTIAL_ARTS","SWIMMING_POOL","CROSSFIT","DANCE_STUDIO"]
+    },
+    {
+      "key": "HOSPITALITY", "labelEn": "Hospitality", "labelAr": "ضيافة",
+      "sub": ["HOTEL","HOSTEL","RESORT","APARTMENT_RENTAL","GUESTHOUSE","RIAD"]
+    },
+    {
+      "key": "HEALTH", "labelEn": "Health", "labelAr": "الصحة",
+      "sub": ["CLINIC","DENTIST","PHARMACY","HOSPITAL","OPTICS","VET"]
+    },
+    {
+      "key": "ENTERTAINMENT", "labelEn": "Entertainment", "labelAr": "ترفيه",
+      "sub": ["CINEMA","THEATER","AMUSEMENT_PARK","BOWLING","ARCADE","ESCAPE_ROOM"]
+    },
+    {
+      "key": "RETAIL", "labelEn": "Retail", "labelAr": "تجزئة",
+      "sub": ["BOOKSTORE","CLOTHING_STORE","GROCERY","GIFT_SHOP","ELECTRONICS","JEWELRY","PHARMACY_RETAIL"]
+    },
+    {
+      "key": "CULTURE", "labelEn": "Culture", "labelAr": "ثقافة",
+      "sub": ["LIBRARY","MUSEUM","GALLERY","HISTORIC_SITE","CULTURAL_CENTER"]
+    },
+    {
+      "key": "OUTDOORS", "labelEn": "Outdoors", "labelAr": "خارجي",
+      "sub": ["PARK","BEACH","HIKING_TRAIL","GARDEN","DIVE_SITE"]
+    },
+    {
+      "key": "SERVICES", "labelEn": "Services", "labelAr": "خدمات",
+      "sub": ["REPAIR_SHOP","LAUNDRY","PET_GROOMING","PRINT_SHOP","MOVERS"]
+    },
+    {
+      "key": "EDUCATION", "labelEn": "Education", "labelAr": "تعليم",
+      "sub": ["LANGUAGE_INSTITUTE","TUTORING","MUSIC_SCHOOL","ART_STUDIO"]
+    },
+    {
+      "key": "AUTO", "labelEn": "Auto", "labelAr": "سيارات",
+      "sub": ["CAR_WASH","MECHANIC","GAS_STATION","EV_CHARGING","TIRE_SHOP"]
+    },
+    {
+      "key": "RELIGIOUS", "labelEn": "Religious", "labelAr": "ديني",
+      "sub": ["MOSQUE","CHURCH","SHRINE"]
+    }
+  ]
+}

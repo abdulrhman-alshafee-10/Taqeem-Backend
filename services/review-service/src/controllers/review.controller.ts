@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import { computeVerification } from "../services/verification.service.js";
 import { translateReview } from "../services/translation.service.js";
 import { assertOwnership } from "./owner.controller.js";
+import axios from "axios";
 
 export async function listByBusiness(req: Request, res: Response) {
   const { businessId } = req.params;
@@ -38,8 +39,26 @@ export async function create(req: Request, res: Response) {
   const { businessId } = req.params;
 
   try {
+    const bizUrl = process.env.BUSINESS_SERVICE_URL || "http://localhost:4002";
+    const bizRes = await axios.get(`${bizUrl}/internal/businesses/${businessId}`);
+    const biz = bizRes.data;
+
     let rating = req.body.rating;
-    if (req.body.aspects) {
+    if (req.body.aspects && Object.keys(req.body.aspects).length > 0) {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const { fileURLToPath } = await import("node:url");
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+      const templatesPath = path.resolve(__dirname, "../../../../shared/catalogues/aspect-templates.json");
+      const templates = JSON.parse(fs.readFileSync(templatesPath, "utf-8"));
+      
+      const allowed = new Set(templates[biz.vertical]?.aspects?.map((a: any) => a.key) || []);
+      for (const key of Object.keys(req.body.aspects)) {
+        if (!allowed.has(key)) {
+          return res.status(400).json({ error: `Unknown aspect ${key} for ${biz.vertical}` });
+        }
+      }
+
       const vals = Object.values(req.body.aspects).filter(v => typeof v === "number") as number[];
       if (vals.length > 0) {
         rating = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) || rating;
@@ -105,7 +124,25 @@ export async function update(req: Request, res: Response) {
   if (doc.authorId !== ctx.id && !ctx.isAdmin) return res.status(403).json({ error: "Forbidden" });
 
   let rating = req.body.rating ?? doc.rating;
-  if (req.body.aspects) {
+  if (req.body.aspects && Object.keys(req.body.aspects).length > 0) {
+    const bizUrl = process.env.BUSINESS_SERVICE_URL || "http://localhost:4002";
+    const bizRes = await axios.get(`${bizUrl}/internal/businesses/${doc.businessId}`);
+    const biz = bizRes.data;
+
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const templatesPath = path.resolve(__dirname, "../../../../shared/catalogues/aspect-templates.json");
+    const templates = JSON.parse(fs.readFileSync(templatesPath, "utf-8"));
+    
+    const allowed = new Set(templates[biz.vertical]?.aspects?.map((a: any) => a.key) || []);
+    for (const key of Object.keys(req.body.aspects)) {
+      if (!allowed.has(key)) {
+        return res.status(400).json({ error: `Unknown aspect ${key} for ${biz.vertical}` });
+      }
+    }
+
     const vals = Object.values(req.body.aspects).filter(v => typeof v === "number") as number[];
     if (vals.length > 0) {
       rating = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) || rating;
