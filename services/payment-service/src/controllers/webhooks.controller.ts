@@ -103,20 +103,37 @@ async function onSubscriptionChanged(sub: any) {
 
   const newStatus = statusMap[sub.status] || "ACTIVE";
   
+  // Extract tier from metadata
+  const tier = (sub.items?.data?.[0]?.price?.metadata?.taqeemTier as any) ?? "BASIC";
+  
+  const patch: any = {
+    status: newStatus,
+    tier,
+    currentPeriodEnd: new Date(sub.current_period_end * 1000),
+    cancelAt: sub.cancel_at ? new Date(sub.cancel_at * 1000) : null
+  };
+
+  if (newStatus === "PAST_DUE" && !subscription.gracePeriodEndsAt) {
+    patch.gracePeriodEndsAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+  }
+  if (newStatus === "ACTIVE") {
+    patch.gracePeriodEndsAt = null;
+  }
+
   await prisma.subscription.update({
     where: { id: subscription.id },
-    data: { 
-      status: newStatus,
-      currentPeriodEnd: new Date(sub.current_period_end * 1000),
-      cancelAt: sub.cancel_at ? new Date(sub.cancel_at * 1000) : null
-    }
+    data: patch
   });
 
-  await publishEvent(`subscription.${newStatus.toLowerCase()}`, {
+  const evtName = newStatus === "ACTIVE" ? "subscription.activated" 
+               : newStatus === "PAST_DUE" ? "subscription.past_due" 
+               : "subscription.cancelled";
+
+  await publishEvent(evtName, {
     id: crypto.randomUUID(),
     subscriptionId: subscription.id,
     userId: subscription.userId,
-    plan: subscription.plan,
+    tier,
     businessId: subscription.businessId,
   });
 }

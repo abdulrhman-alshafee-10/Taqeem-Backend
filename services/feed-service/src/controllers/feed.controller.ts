@@ -56,6 +56,48 @@ async function getPersonalizedBusinesses(userId: string, city: string, limit: nu
   }
 }
 
+async function injectSponsoredPosts(items: any[], city: string, userId: string | undefined) {
+  let campaigns: any[] = [];
+  try {
+    const qs = new URLSearchParams();
+    qs.set("kind", "SPONSORED_POST");
+    qs.set("city", city);
+    
+    const res = await fetch(`http://payment-service:4009/api/internal/ads/eligible?${qs.toString()}`);
+    if (res.ok) {
+      campaigns = await res.json();
+    }
+  } catch (e) {
+    console.error("Failed to fetch sponsored campaigns", e);
+    return items;
+  }
+
+  if (!campaigns.length) return items;
+
+  // Assuming items don't have followedByUser here, we just pick max 15%
+  const maxCount = Math.floor(items.length * 0.15);
+  if (maxCount === 0) return items;
+
+  const chosen = campaigns.slice(0, maxCount);
+  
+  const merged = [...items];
+  chosen.forEach((c, i) => {
+    // Insert at specific intervals (e.g., pos 3, 8, 13)
+    merged.splice(3 + i * 5, 0, {
+      kind: "OWNER_POST",
+      refId: c.refId,
+      sponsored: true,
+      campaignId: c.id,
+      reasonEn: "Sponsored",
+      finalScore: 999999
+    });
+
+    // We should publish ad.impression event here in a real scenario
+  });
+
+  return merged;
+}
+
 export async function getFeed(req: Request, res: Response) {
   try {
     const userId = (req as any).user?.id;
@@ -65,13 +107,16 @@ export async function getFeed(req: Request, res: Response) {
     const trending = await getTrending(city, 20);
     const personal = userId ? await getPersonalizedBusinesses(userId, city, 20) : [];
     
-    const allItems = [...trending, ...personal];
+    let allItems = [...trending, ...personal];
 
     // Rerank
-    const reranked = allItems.map((i: any) => ({
+    let reranked = allItems.map((i: any) => ({
       ...i,
       finalScore: (i.score || 0.5) * (WEIGHTS[i.stream] || 0.1)
     })).sort((a, b) => b.finalScore - a.finalScore).slice(0, 30);
+
+    // Inject sponsored
+    reranked = await injectSponsoredPosts(reranked, city, userId);
 
     res.json({ items: reranked });
   } catch (err: any) {

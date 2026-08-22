@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import gamificationRoutes from "./routes/gamification.routes.js";
+import quotasRoutes from "./routes/quotas.routes.js";
 import { setupSwagger } from "@taqeem/shared/swagger/index.js";
 import { startBadgeAwarder } from "./workers/badge-awarder.js";
 import { startStreakUpdater } from "./workers/streak-updater.js";
@@ -15,6 +16,7 @@ app.get("/health", (_req: Request, res: Response) => { res.json({ status: "ok" }
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/gamification", gamificationRoutes);
+app.use("/api", quotasRoutes);
 
 setupSwagger(app, "User Service", "1.0.0");
 

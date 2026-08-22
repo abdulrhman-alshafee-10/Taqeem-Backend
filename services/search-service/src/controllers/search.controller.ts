@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Request, Response } from "express";
 import { client } from "../es.js";
 import { buildSearchQuery } from "../query/build-search-query.js";
+import { injectPromoted } from "../ads/inject.js";
 
 const QuerySchema = z.object({
   q:          z.string().max(200).optional(),
@@ -53,11 +54,13 @@ export async function search(req: Request, res: Response) {
   try {
     const result = await client.search({ index: "businesses", ...body });
 
-    const items = result.hits.hits.map((h: any) => ({
+    let items = result.hits.hits.map((h: any) => ({
       ...h._source,
       score: h._score,
       distanceKm: h.fields?.distanceKm?.[0] ?? null,
     }));
+
+    items = await injectPromoted(items, params, { userId });
 
     res.json({
       total: typeof result.hits.total === "object" ? result.hits.total.value : result.hits.total,

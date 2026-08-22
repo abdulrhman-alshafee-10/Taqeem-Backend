@@ -1,13 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { badgeAwarderHandler } from "../badge-awarder.js";
-import { prismaMock } from "../../../../../shared/test-utils/prismaMock.js";
 import { publishEvent } from "@taqeem/shared/events/publisher.js";
 import axios from "axios";
-
-vi.mock("@prisma/client", () => ({
-  PrismaClient: vi.fn().mockImplementation(() => prismaMock)
+import { badgeAwarderHandler } from "../badge-awarder.js";
+const { prismaMock } = vi.hoisted(() => ({
+  prismaMock: {
+    userBadge: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+    }
+  }
 }));
 
+vi.mock("@prisma/client", () => ({
+  PrismaClient: vi.fn(() => prismaMock)
+}));
 vi.mock("axios");
 
 describe("badgeAwarderHandler", () => {
