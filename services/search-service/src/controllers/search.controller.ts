@@ -24,6 +24,7 @@ const QuerySchema = z.object({
   page:       z.coerce.number().int().min(1).default(1),
   size:       z.coerce.number().int().min(1).max(50).default(20),
   personalize: z.string().optional().transform(v => v === "true"),
+  accessibility: z.string().optional().transform(v => v?.split(",").filter(Boolean) ?? []),
 });
 
 export async function search(req: Request, res: Response) {

@@ -46,6 +46,15 @@ export function buildSearchQuery(params: any) {
     }
   }
 
+  if (params.accessibility?.length) {
+    for (const f of params.accessibility) {
+      const [path, value] = f.split(":");
+      if (path && value) {
+        filter.push({ term: { [`accessibility.${path}`]: value } });
+      }
+    }
+  }
+
   if (typeof lat === "number" && typeof lng === "number") {
     filter.push({
       geo_distance: {

@@ -7,6 +7,7 @@ import ownerRoutes  from "./routes/owner.routes.js";
 import { getBusinessAggregates } from "./controllers/internal.controller.js";
 import { initPublisher } from "./events/publisher.js";
 import { startReviewConsumer } from "./events/consumer.js";
+import { startAltTextConsumer } from "./workers/alt-text.consumer.js";
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
@@ -31,6 +32,7 @@ async function start() {
   await connectMongo();
   await initPublisher();
   await startReviewConsumer();
+  await startAltTextConsumer();
   app.listen(PORT, () => console.log(`review-service on :${PORT}`));
 }
 

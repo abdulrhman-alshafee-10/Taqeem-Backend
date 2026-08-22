@@ -12,6 +12,7 @@ const MediaSchema = new mongoose.Schema(
     // AI-generated
     tags:        { type: [String], default: [] },
     altText:     { type: String, maxlength: 240 },
+    altTextGenerated: { type: String, maxlength: 240 },
     moderation:  {
       verdict:    { type: String, enum: ["approved", "pending", "rejected"], default: "pending" },
       reason:     String,

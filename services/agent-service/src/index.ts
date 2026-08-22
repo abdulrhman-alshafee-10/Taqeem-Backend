@@ -14,6 +14,7 @@ app.use("/api/agent", agentRoutes);
 app.use("/internal", internalRoutes);
 
 import { startAspectScorer } from "./workers/aspect-scorer.js";
+import { startAltTextWorker } from "./workers/alt-text.worker.js";
 import { startSummaryGenerator } from "./workers/summary-generator.js";
 import { startRagIndexer } from "./workers/rag-indexer.js";
 import { startFraudDetector } from "./workers/fraud-detector.js";
@@ -24,6 +25,7 @@ async function startWorkers() {
   await initPublisher();
   await startMediaTagger();
   await startAspectScorer();
+  await startAltTextWorker();
   await startSummaryGenerator();
   await startRagIndexer();
   await startFraudDetector();

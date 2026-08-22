@@ -16,4 +16,8 @@ r.post  ("/:id/claim",     requireAuth as any, validate(ClaimSchema), claim);
 r.post  ("/:id/halal/confirm", requireAuth as any, confirmHalal);
 r.patch ("/:id/reservations", requireAuth as any, toggleReservations);
 
+import { getAccessibility, confirmAccessibility } from "../controllers/accessibility.controller.js";
+r.get   ("/:id/accessibility", getAccessibility);
+r.post  ("/:id/accessibility/confirm", requireAuth as any, confirmAccessibility);
+
 export default r;

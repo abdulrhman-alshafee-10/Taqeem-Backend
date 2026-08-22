@@ -61,6 +61,9 @@ model Business {
   dietary          String[] @default([])                @map("dietary")
   atmosphere       String[] @default([])                @map("atmosphere")
   paymentMethods   String[] @default([])                @map("payment_methods")
+  accessibility    Json     @default("{}")              @map("accessibility")
+
+  accessibilityConfirmations AccessibilityConfirmation[]
 
   halalTier          HalalTier @default(NONE) @map("halal_tier")
   halalCertBody      String?   @map("halal_cert_body")
@@ -413,4 +416,20 @@ model DeliveryLink {
   createdAt  DateTime @default(now())
 
   @@unique([businessId, provider])
+}
+
+model AccessibilityConfirmation {
+  id         String   @id @default(uuid()) @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  path       String
+  value      String
+  photoUrl   String?
+  createdAt  DateTime @default(now())
+
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId, path])
+  @@index([businessId, path])
+  @@map("accessibility_confirmations")
 }
