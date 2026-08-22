@@ -5,6 +5,7 @@
     "gateway",
     "services/*",
     "services/feed-service",
+    "services/content-service",
     "shared",
     "tools/*"
   ],

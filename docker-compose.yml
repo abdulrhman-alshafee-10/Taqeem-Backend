@@ -389,3 +389,23 @@ services:
         condition: service_healthy
     networks:
       - taqeem_network
+
+  content-service:
+    build:
+      context: .
+      dockerfile: services/content-service/Dockerfile
+    container_name: taqeem_content_service
+    restart: unless-stopped
+    ports:
+      - "4011:4011"
+    env_file:
+      - services/content-service/.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - taqeem_network

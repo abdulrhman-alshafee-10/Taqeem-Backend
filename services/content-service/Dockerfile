@@ -8,8 +8,8 @@ COPY tsconfig.base.json ./
 # Copy shared library
 COPY shared ./shared
 
-# Copy feed service
-COPY services/feed-service ./services/feed-service
+# Copy content service
+COPY services/content-service ./services/content-service
 
 # Install dependencies
 RUN npm install
@@ -18,10 +18,9 @@ RUN npm install
 WORKDIR /app/shared
 RUN npm run build
 
-# Build feed service
-WORKDIR /app/services/feed-service
-RUN npx prisma generate
+# Build content service
+WORKDIR /app/services/content-service
 RUN npm run build
 
-EXPOSE 4013
+EXPOSE 4011
 CMD ["node", "dist/index.js"]
